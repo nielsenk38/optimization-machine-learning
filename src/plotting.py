@@ -28,6 +28,14 @@ def load_metrics(raw_dir: str | Path) -> pd.DataFrame:
     return pd.concat([pd.read_csv(path) for path in paths], ignore_index=True)
 
 
+def load_prediction_distributions(raw_dir: str | Path) -> pd.DataFrame:
+    """Load and concatenate all per-run prediction-distribution CSV files."""
+    paths = sorted(Path(raw_dir).glob("prediction_distribution_*.csv"))
+    if not paths:
+        return pd.DataFrame(columns=["order_mode", "seed", "class_id", "num_predictions"])
+    return pd.concat([pd.read_csv(path) for path in paths], ignore_index=True)
+
+
 def summarize_by_epoch(df: pd.DataFrame) -> pd.DataFrame:
     """Compute mean and standard deviation across seeds."""
     metrics = [
@@ -97,6 +105,9 @@ def make_all_plots(results_dir: str | Path) -> None:
     df = load_metrics(raw_dir)
     summary = summarize_by_epoch(df)
     summary.to_csv(tables_dir / "summary_by_epoch.csv", index=False)
+
+    prediction_distribution = load_prediction_distributions(raw_dir)
+    prediction_distribution.to_csv(tables_dir / "prediction_distribution.csv", index=False)
 
     final_epoch = int(df["epoch"].max())
     final = df[df["epoch"] == final_epoch]

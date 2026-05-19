@@ -1,0 +1,9 @@
+order_mode,seed,model,optimizer,epochs,batch_size,learning_rate,momentum,weight_decay,device,deterministic,epoch,train_loss,train_accuracy,grad_norm_mean,grad_norm_std,test_loss,test_accuracy,epoch_time_sec
+label_block_random,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,1,,0.664,,,,0.1,11.468098402023315
+label_block_random,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,2,,0.1,,,,0.1,9.82098650932312
+label_block_random,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,3,,0.1,,,,0.1,9.90176248550415
+label_block_random,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,4,,0.1,,,,0.1,9.892494916915894
+label_block_random,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,5,,0.1,,,,0.1,9.891494989395142
+label_block_random,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,6,,0.1,,,,0.1,9.947957754135132
+label_block_random,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,7,,0.1,,,,0.1,9.930811882019043
+label_block_random,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,8,,0.1,,,,0.1,10.048792362213135

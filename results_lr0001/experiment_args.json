@@ -1,0 +1,28 @@
+{
+  "batch_size": 128,
+  "data_dir": "data",
+  "deterministic": false,
+  "device": "auto",
+  "epochs": 8,
+  "force": true,
+  "lr": 0.001,
+  "max_train_examples": 20000,
+  "model": "small_cnn",
+  "momentum": 0.9,
+  "no_progress": false,
+  "num_workers": 0,
+  "optimizer": "sgd",
+  "orders": [
+    "label_sorted",
+    "label_block_random"
+  ],
+  "output_dir": "results_lr0001",
+  "plot_only": false,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "subset_seed": 123,
+  "weight_decay": 0.0005
+}

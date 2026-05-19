@@ -83,7 +83,8 @@ def main() -> None:
         for order_mode in args.orders:
             for seed in args.seeds:
                 metrics_path = Path(raw_dir) / f"metrics_{order_mode}_seed{seed}.csv"
-                if metrics_path.exists() and not args.force:
+                distribution_path = Path(raw_dir) / f"prediction_distribution_{order_mode}_seed{seed}.csv"
+                if metrics_path.exists() and distribution_path.exists() and not args.force:
                     print(f"Skipping existing run: {metrics_path}")
                     continue
 

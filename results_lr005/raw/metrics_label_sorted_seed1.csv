@@ -1,0 +1,9 @@
+order_mode,seed,model,optimizer,epochs,batch_size,learning_rate,momentum,weight_decay,device,deterministic,epoch,train_loss,train_accuracy,grad_norm_mean,grad_norm_std,test_loss,test_accuracy,epoch_time_sec
+label_sorted,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,1,,0.572,,,,0.1,11.90751051902771
+label_sorted,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,2,,0.1,,,,0.1,9.772908687591553
+label_sorted,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,3,,0.1,,,,0.1,9.903045415878296
+label_sorted,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,4,,0.1,,,,0.1,9.772005796432495
+label_sorted,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,5,,0.1,,,,0.1,9.866279125213623
+label_sorted,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,6,,0.1,,,,0.1,9.76703143119812
+label_sorted,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,7,,0.1,,,,0.1,10.097670078277588
+label_sorted,1,small_cnn,sgd,8,128,0.05,0.9,0.0005,cpu,False,8,,0.1,,,,0.1,9.839788675308228

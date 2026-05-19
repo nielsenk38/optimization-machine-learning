@@ -140,6 +140,29 @@ def evaluate(
     }
 
 
+@torch.no_grad()
+def collect_prediction_distribution(
+    model: nn.Module,
+    loader: DataLoader,
+    device: torch.device,
+) -> torch.Tensor:
+    """Count predicted classes over the full evaluation loader."""
+    model.eval()
+    counts: torch.Tensor | None = None
+
+    for inputs, _ in loader:
+        inputs = inputs.to(device, non_blocking=True)
+        logits = model(inputs)
+        batch_counts = torch.bincount(logits.argmax(dim=1).cpu(), minlength=logits.shape[1])
+        if counts is None:
+            counts = torch.zeros(logits.shape[1], dtype=torch.long)
+        counts += batch_counts
+
+    if counts is None:
+        return torch.zeros(0, dtype=torch.long)
+    return counts
+
+
 def run_single_experiment(
     config: TrainConfig,
     train_loader: DataLoader,
@@ -198,4 +221,18 @@ def run_single_experiment(
 
     metrics_path = output_dir / f"metrics_{config.order_mode}_seed{config.seed}.csv"
     pd.DataFrame(rows).to_csv(metrics_path, index=False)
+
+    prediction_counts = collect_prediction_distribution(model, test_loader, device)
+    distribution_rows = [
+        {
+            "order_mode": config.order_mode,
+            "seed": config.seed,
+            "class_id": class_id,
+            "num_predictions": int(count),
+        }
+        for class_id, count in enumerate(prediction_counts.tolist())
+    ]
+    distribution_path = output_dir / f"prediction_distribution_{config.order_mode}_seed{config.seed}.csv"
+    pd.DataFrame(distribution_rows).to_csv(distribution_path, index=False)
+
     return metrics_path

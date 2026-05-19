@@ -1,0 +1,11 @@
+order_mode,seed,class_id,num_predictions
+label_sorted,2,0,10000
+label_sorted,2,1,0
+label_sorted,2,2,0
+label_sorted,2,3,0
+label_sorted,2,4,0
+label_sorted,2,5,0
+label_sorted,2,6,0
+label_sorted,2,7,0
+label_sorted,2,8,0
+label_sorted,2,9,0

@@ -1,0 +1,11 @@
+order_mode,seed,class_id,num_predictions
+label_block_random,2,0,7
+label_block_random,2,1,0
+label_block_random,2,2,0
+label_block_random,2,3,1699
+label_block_random,2,4,10
+label_block_random,2,5,0
+label_block_random,2,6,2483
+label_block_random,2,7,1258
+label_block_random,2,8,3002
+label_block_random,2,9,1541
