@@ -1,0 +1,11 @@
+order_mode,seed,experiment_name,output_dir,model,optimizer,epochs,batch_size,max_train_examples,learning_rate,momentum,weight_decay,device,deterministic,save_embeddings,class_id,num_predictions
+curriculum_hard,0,results_v3_lr0p1,results_v3_lr0p1,small_cnn,sgd,10,128,20000,0.1,0.9,0.0005,cpu,False,False,0,1027
+curriculum_hard,0,results_v3_lr0p1,results_v3_lr0p1,small_cnn,sgd,10,128,20000,0.1,0.9,0.0005,cpu,False,False,1,968
+curriculum_hard,0,results_v3_lr0p1,results_v3_lr0p1,small_cnn,sgd,10,128,20000,0.1,0.9,0.0005,cpu,False,False,2,1179
+curriculum_hard,0,results_v3_lr0p1,results_v3_lr0p1,small_cnn,sgd,10,128,20000,0.1,0.9,0.0005,cpu,False,False,3,1409
+curriculum_hard,0,results_v3_lr0p1,results_v3_lr0p1,small_cnn,sgd,10,128,20000,0.1,0.9,0.0005,cpu,False,False,4,791
+curriculum_hard,0,results_v3_lr0p1,results_v3_lr0p1,small_cnn,sgd,10,128,20000,0.1,0.9,0.0005,cpu,False,False,5,996
+curriculum_hard,0,results_v3_lr0p1,results_v3_lr0p1,small_cnn,sgd,10,128,20000,0.1,0.9,0.0005,cpu,False,False,6,686
+curriculum_hard,0,results_v3_lr0p1,results_v3_lr0p1,small_cnn,sgd,10,128,20000,0.1,0.9,0.0005,cpu,False,False,7,1076
+curriculum_hard,0,results_v3_lr0p1,results_v3_lr0p1,small_cnn,sgd,10,128,20000,0.1,0.9,0.0005,cpu,False,False,8,884
+curriculum_hard,0,results_v3_lr0p1,results_v3_lr0p1,small_cnn,sgd,10,128,20000,0.1,0.9,0.0005,cpu,False,False,9,984

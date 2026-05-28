@@ -1,0 +1,17 @@
+order_mode,seed,experiment_name,output_dir,model,optimizer,epochs,batch_size,max_train_examples,learning_rate,momentum,weight_decay,device,deterministic,save_embeddings,epoch,batch_index,global_step,cosine_similarity
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,1,1,
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,2,2,0.6646268963813782
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,3,3,0.6072536110877991
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,4,4,0.5174466371536255
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,5,5,0.4995327293872833
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,6,6,0.666670560836792
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,7,7,0.4682726263999939
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,8,8,0.4312683939933777
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,9,9,0.37967774271965027
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,10,10,0.34704336524009705
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,11,11,-0.33565160632133484
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,12,12,0.3966348171234131
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,13,13,-0.4775768518447876
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,14,14,-0.49762213230133057
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,15,15,-0.19693885743618011
+random,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,16,16,-0.018370019271969795

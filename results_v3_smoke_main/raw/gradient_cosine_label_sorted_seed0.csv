@@ -1,0 +1,17 @@
+order_mode,seed,experiment_name,output_dir,model,optimizer,epochs,batch_size,max_train_examples,learning_rate,momentum,weight_decay,device,deterministic,save_embeddings,epoch,batch_index,global_step,cosine_similarity
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,1,1,
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,2,2,0.34198933839797974
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,3,3,0.1406925767660141
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,4,4,0.12407837808132172
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,5,5,0.4420364797115326
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,6,6,0.202514186501503
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,7,7,0.32182252407073975
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,8,8,0.8324941396713257
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,9,9,0.04174087196588516
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,10,10,0.5177755355834961
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,11,11,0.8168906569480896
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,12,12,0.01522800698876381
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,13,13,0.6887415647506714
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,14,14,0.6844050288200378
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,15,15,0.029671436175704002
+label_sorted,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,16,16,0.994091272354126

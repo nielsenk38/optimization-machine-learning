@@ -24,16 +24,20 @@ class SmallCNN(nn.Module):
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2),
         )
-        self.classifier = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(64 * 7 * 7, 128),
-            nn.ReLU(inplace=True),
-            nn.Linear(128, num_classes),
-        )
+        self.flatten = nn.Flatten()
+        self.embedding_layer = nn.Linear(64 * 7 * 7, 128)
+        self.embedding_activation = nn.ReLU(inplace=True)
+        self.output_layer = nn.Linear(128, num_classes)
+
+    def extract_embedding(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.features(x)
+        x = self.flatten(x)
+        x = self.embedding_layer(x)
+        return self.embedding_activation(x)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.features(x)
-        return self.classifier(x)
+        embedding = self.extract_embedding(x)
+        return self.output_layer(embedding)
 
 
 class LogisticRegression(nn.Module):
@@ -43,8 +47,11 @@ class LogisticRegression(nn.Module):
         super().__init__()
         self.linear = nn.Linear(28 * 28, num_classes)
 
+    def extract_embedding(self, x: torch.Tensor) -> torch.Tensor:
+        return x.view(x.size(0), -1)
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.linear(x.view(x.size(0), -1))
+        return self.linear(self.extract_embedding(x))
 
 
 def build_model(model_name: str) -> nn.Module:

@@ -1,0 +1,11 @@
+order_mode,seed,experiment_name,output_dir,model,optimizer,epochs,batch_size,max_train_examples,learning_rate,momentum,weight_decay,device,deterministic,save_embeddings,epoch,train_loss,train_accuracy,grad_norm_mean,grad_norm_std,grad_cosine_mean,grad_cosine_std,test_loss,test_accuracy,epoch_time_sec
+label_sorted,0,results_v3_main,results_v3_main,small_cnn,sgd,10,128,20000,0.05,0.9,0.0005,cpu,False,True,1,,0.48305,,,0.27112334966659546,0.3476930260658264,,0.1,17.235867738723755
+label_sorted,0,results_v3_main,results_v3_main,small_cnn,sgd,10,128,20000,0.05,0.9,0.0005,cpu,False,True,2,,0.1,,,,,,0.1,15.18174433708191
+label_sorted,0,results_v3_main,results_v3_main,small_cnn,sgd,10,128,20000,0.05,0.9,0.0005,cpu,False,True,3,,0.1,,,,,,0.1,13.850461483001709
+label_sorted,0,results_v3_main,results_v3_main,small_cnn,sgd,10,128,20000,0.05,0.9,0.0005,cpu,False,True,4,,0.1,,,,,,0.1,13.37218427658081
+label_sorted,0,results_v3_main,results_v3_main,small_cnn,sgd,10,128,20000,0.05,0.9,0.0005,cpu,False,True,5,,0.1,,,,,,0.1,14.23945927619934
+label_sorted,0,results_v3_main,results_v3_main,small_cnn,sgd,10,128,20000,0.05,0.9,0.0005,cpu,False,True,6,,0.1,,,,,,0.1,13.083003520965576
+label_sorted,0,results_v3_main,results_v3_main,small_cnn,sgd,10,128,20000,0.05,0.9,0.0005,cpu,False,True,7,,0.1,,,,,,0.1,13.682897329330444
+label_sorted,0,results_v3_main,results_v3_main,small_cnn,sgd,10,128,20000,0.05,0.9,0.0005,cpu,False,True,8,,0.1,,,,,,0.1,14.77196717262268
+label_sorted,0,results_v3_main,results_v3_main,small_cnn,sgd,10,128,20000,0.05,0.9,0.0005,cpu,False,True,9,,0.1,,,,,,0.1,14.13379955291748
+label_sorted,0,results_v3_main,results_v3_main,small_cnn,sgd,10,128,20000,0.05,0.9,0.0005,cpu,False,True,10,,0.1,,,,,,0.1,13.972891569137573

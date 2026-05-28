@@ -1,0 +1,2 @@
+order_mode,seed,experiment_name,output_dir,model,optimizer,epochs,batch_size,max_train_examples,learning_rate,momentum,weight_decay,device,deterministic,save_embeddings,epoch,train_loss,train_accuracy,grad_norm_mean,grad_norm_std,grad_cosine_mean,grad_cosine_std,test_loss,test_accuracy,epoch_time_sec
+curriculum_easy,0,results_v3_smoke_main,results_v3_smoke_main,small_cnn,sgd,1,128,2000,0.05,0.9,0.0005,cpu,False,True,1,1.9283645725250245,0.337,2.5725455284118652,1.3838534355163574,0.43516018986701965,0.2874927222728729,1.8074936857223511,0.2451,5.9731152057647705

@@ -1,0 +1,101 @@
+---
+title: "Does Training-Data Order Influence SGD?"
+subtitle: "EPFL Optimization for Machine Learning Mini-Project"
+author:
+  - "Niels Enkaoua"
+  - "Teammate 1"
+  - "Teammate 2"
+date: "Spring 2026"
+bibliography: references.bib
+format:
+  pdf:
+    documentclass: article
+    papersize: a4
+    fontsize: 10pt
+    geometry:
+      - margin=1.55cm
+    number-sections: false
+    colorlinks: true
+    fig-pos: H
+execute:
+  echo: false
+  warning: false
+  message: false
+header-includes:
+  - \usepackage{booktabs}
+  - \usepackage{float}
+  - \usepackage{caption}
+  - \captionsetup{font=small}
+---
+
+## Abstract
+
+We study whether the order of training examples changes SGD optimization and generalization when the dataset, model, and optimizer are fixed. A small CNN is trained on Fashion-MNIST [@xiao2017fashion] with SGD with momentum for 10 epochs on a stratified 20,000-example training subset, using seeds 0, 1, and 2. Random reshuffling is the strongest and most stable baseline. Reusing one fixed random order is slightly worse, suggesting that reshuffling across epochs helps. Curriculum-hard outperforms curriculum-easy, showing that curriculum design matters. In contrast, label-sorted and label-block-random streams collapse to chance-level accuracy at the main learning rate, and prediction diagnostics reveal degenerate or highly biased outputs. Lowering the learning rate prevents complete collapse but still leaves these non-iid orders far below random reshuffling. Data order therefore affects both optimization stability and learning-rate sensitivity.
+
+## Setup
+
+The only experimental variable is the training-data order. We compare `random`, `fixed_random`, `curriculum_easy`, `curriculum_hard`, `label_sorted`, and `label_block_random`. The model is a small CNN trained with SGD with momentum 0.9, weight decay $5 \cdot 10^{-4}$, batch size 128, and learning rate 0.05 unless stated otherwise. The main reported runs use 10 epochs, seeds 0, 1, and 2, and `--max-train-examples 20000`. Metrics are training loss, test accuracy, gradient norms, and predicted-class distributions on the test set.
+
+The comparison isolates a simple question: does reshuffling help because it changes the order every epoch, and how badly can SGD fail when the stream becomes strongly non-iid? This is directly relevant because SGD theory and practice typically rely on random reshuffling or related sampling assumptions [@gurbuzbalaban2021random; @bottou2018optimization].
+
+## Results
+
+Random reshuffling gives the best final performance and the smoothest optimization trajectory. Fixed random ordering is slightly worse, which indicates that changing the permutation between epochs is useful rather than incidental. The curriculum results are asymmetric: `curriculum_hard` consistently beats `curriculum_easy`, so the effect of curriculum depends strongly on how "difficulty" is defined.
+
+The most severe behavior appears for the label-based orders. At learning rate 0.05, both `label_sorted` and `label_block_random` collapse to chance-level accuracy. The prediction-distribution diagnostic shows why: the trained models make degenerate or highly concentrated predictions instead of learning a balanced classifier. Reducing the learning rate to 0.001 prevents total collapse, but the two label-based orders remain much worse than the random baseline. The main conclusion is therefore not just that some orders are slower, but that non-iid streams materially change optimization stability and step-size sensitivity.
+
+\begin{figure}[H]
+\centering
+\IfFileExists{../results/figures/test_accuracy.pdf}{
+  \begin{minipage}[t]{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{../results/figures/test_accuracy.pdf}
+  \caption*{Test accuracy across epochs.}
+  \end{minipage}
+}{}
+\IfFileExists{../results/figures/final_test_accuracy.pdf}{
+  \begin{minipage}[t]{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{../results/figures/final_test_accuracy.pdf}
+  \caption*{Final accuracy, mean $\pm$ std.}
+  \end{minipage}
+}{}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\IfFileExists{../results/figures/lr_sensitivity_label_orders.pdf}{
+  \begin{minipage}[t]{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{../results/figures/lr_sensitivity_label_orders.pdf}
+  \caption*{Label-order sensitivity to learning rate.}
+  \end{minipage}
+}{}
+\IfFileExists{../results/figures/prediction_distribution_label_orders.pdf}{
+  \begin{minipage}[t]{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{../results/figures/prediction_distribution_label_orders.pdf}
+  \caption*{Mean predicted-class counts for label orders.}
+  \end{minipage}
+}{}
+\end{figure}
+
+## Reproducibility
+
+Main reported experiment:
+
+```powershell
+python ..\run.py --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --force
+```
+
+Learning-rate diagnostics for the label-based orders:
+
+```powershell
+python ..\run.py --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --orders label_sorted label_block_random --lr 0.05 --output-dir ..\results_lr005 --force
+python ..\run.py --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --orders label_sorted label_block_random --lr 0.001 --output-dir ..\results_lr0001 --force
+python ..\run.py --output-dir ..\results --plot-only
+```
+
+All summary CSV files record `order_mode`, `seed` or aggregated seed lists, `learning_rate`, `epochs`, `max_train_examples`, `optimizer`, and the experiment directory so that runs with different hyperparameters are not silently mixed.
+
+## References

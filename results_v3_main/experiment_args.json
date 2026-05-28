@@ -1,0 +1,31 @@
+{
+  "batch_size": 128,
+  "data_dir": "data",
+  "deterministic": false,
+  "device": "auto",
+  "epochs": 10,
+  "experiment_name": "results_v3_main",
+  "lr": 0.05,
+  "max_train_examples": 20000,
+  "model": "small_cnn",
+  "momentum": 0.9,
+  "num_workers": 0,
+  "optimizer": "sgd",
+  "orders": [
+    "random",
+    "fixed_random",
+    "curriculum_easy",
+    "curriculum_hard",
+    "label_sorted",
+    "label_block_random"
+  ],
+  "output_dir": "results_v3_main",
+  "save_embeddings": true,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "subset_seed": 123,
+  "weight_decay": 0.0005
+}

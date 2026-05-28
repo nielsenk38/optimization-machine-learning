@@ -1,0 +1,6 @@
+output_dir,experiment_name,order_mode,learning_rate,epochs,max_train_examples,optimizer,model,batch_size,momentum,weight_decay,seed,seed_count,test_accuracy_mean,test_accuracy_std,test_accuracy_count
+results_v3_lr0p1,results_v3_lr0p1,curriculum_hard,0.1,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.7952,0.060299336646434186,3
+results_v3_lr0p1,results_v3_lr0p1,fixed_random,0.1,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.8674666666666667,0.008124243554530673,3
+results_v3_lr0p1,results_v3_lr0p1,label_block_random,0.1,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.10000000000000002,0.0,3
+results_v3_lr0p1,results_v3_lr0p1,label_sorted,0.1,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.10000000000000002,0.0,3
+results_v3_lr0p1,results_v3_lr0p1,random,0.1,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.8795999999999999,0.005020956084253332,3

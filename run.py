@@ -1,7 +1,7 @@
 """Reproduce the data-order mini-project experiments.
 
 Example:
-    python run.py --epochs 8 --seeds 0 1 2 --max-train-examples 20000
+    python run.py --epochs 10 --seeds 0 1 2 --max-train-examples 20000
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from pathlib import Path
 
 from src.data import ORDER_MODES, load_fashion_mnist, make_test_loader, make_train_loader
 from src.plotting import make_all_plots
-from src.train import TrainConfig, run_single_experiment
+from src.train import TrainConfig, get_run_artifact_paths, run_single_experiment
 from src.utils import ensure_dir, get_device, save_json
 
 
@@ -34,7 +34,7 @@ def parse_args() -> argparse.Namespace:
         help="Data-order strategies to compare.",
     )
     parser.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2], help="Random seeds.")
-    parser.add_argument("--epochs", type=int, default=8, help="Number of epochs per run.")
+    parser.add_argument("--epochs", type=int, default=10, help="Number of epochs per run.")
     parser.add_argument("--batch-size", type=int, default=128, help="Mini-batch size.")
     parser.add_argument(
         "--max-train-examples",
@@ -59,6 +59,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--plot-only", action="store_true", help="Skip training and only regenerate plots.")
     parser.add_argument("--force", action="store_true", help="Overwrite existing run CSV files.")
     parser.add_argument("--no-progress", action="store_true", help="Disable tqdm progress bars and epoch prints.")
+    parser.add_argument("--save-embeddings", action="store_true", help="Save final test embeddings for each run.")
     return parser.parse_args()
 
 
@@ -66,9 +67,9 @@ def main() -> None:
     args = parse_args()
     output_dir = ensure_dir(args.output_dir)
     raw_dir = ensure_dir(output_dir / "raw")
-    save_json(vars(args), output_dir / "experiment_args.json")
 
     if not args.plot_only:
+        save_json(vars(args), output_dir / "experiment_args.json")
         device = get_device(args.device)
         print(f"Using device: {device}")
         print("Loading Fashion-MNIST...")
@@ -78,14 +79,31 @@ def main() -> None:
             max_train_examples=max_train_examples,
             subset_seed=args.subset_seed,
         )
+        max_train_examples_record = len(bundle.train_dataset)
         test_loader = make_test_loader(bundle, batch_size=args.batch_size, num_workers=args.num_workers)
 
         for order_mode in args.orders:
             for seed in args.seeds:
-                metrics_path = Path(raw_dir) / f"metrics_{order_mode}_seed{seed}.csv"
-                distribution_path = Path(raw_dir) / f"prediction_distribution_{order_mode}_seed{seed}.csv"
-                if metrics_path.exists() and distribution_path.exists() and not args.force:
-                    print(f"Skipping existing run: {metrics_path}")
+                config = TrainConfig(
+                    order_mode=order_mode,
+                    seed=seed,
+                    experiment_name=output_dir.name,
+                    output_dir=str(output_dir),
+                    model=args.model,
+                    optimizer=args.optimizer,
+                    epochs=args.epochs,
+                    batch_size=args.batch_size,
+                    max_train_examples=max_train_examples_record,
+                    learning_rate=args.lr,
+                    momentum=args.momentum,
+                    weight_decay=args.weight_decay,
+                    device=str(device),
+                    deterministic=args.deterministic,
+                    save_embeddings=args.save_embeddings,
+                )
+                artifact_paths = get_run_artifact_paths(config, raw_dir)
+                if all(path.exists() for path in artifact_paths.values()) and not args.force:
+                    print(f"Skipping existing run: {artifact_paths['metrics']}")
                     continue
 
                 train_loader, train_sampler = make_train_loader(
@@ -94,19 +112,6 @@ def main() -> None:
                     seed=seed,
                     batch_size=args.batch_size,
                     num_workers=args.num_workers,
-                )
-                config = TrainConfig(
-                    order_mode=order_mode,
-                    seed=seed,
-                    model=args.model,
-                    optimizer=args.optimizer,
-                    epochs=args.epochs,
-                    batch_size=args.batch_size,
-                    learning_rate=args.lr,
-                    momentum=args.momentum,
-                    weight_decay=args.weight_decay,
-                    device=str(device),
-                    deterministic=args.deterministic,
                 )
                 print(f"\nRunning order={order_mode}, seed={seed}")
                 run_single_experiment(

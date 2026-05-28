@@ -1,0 +1,7 @@
+order_mode,epoch,forgetting_mean,forgetting_std
+curriculum_easy,1,0.0,0.0
+curriculum_hard,1,0.0,0.0
+fixed_random,1,0.0,0.0
+label_block_random,1,0.0,0.0
+label_sorted,1,0.0,0.0
+random,1,0.0,0.0

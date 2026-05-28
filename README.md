@@ -98,16 +98,17 @@ Expected output:
 
 ## Main experiment for the report
 
-Recommended command:
+Recommended command for the reported main experiment:
 
 ```bash
-python run.py --epochs 8 --seeds 0 1 2 --max-train-examples 20000
+python run.py --epochs 10 --seeds 0 1 2 --max-train-examples 20000
 ```
 
-For a stronger final run, use the full training set:
+Learning-rate diagnostic commands for the label-ordered failure mode:
 
 ```bash
-python run.py --epochs 10 --seeds 0 1 2 --max-train-examples 60000
+python run.py --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --orders label_sorted label_block_random --lr 0.05 --output-dir results_lr005
+python run.py --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --orders label_sorted label_block_random --lr 0.001 --output-dir results_lr0001
 ```
 
 If you only want to regenerate figures after training:
@@ -121,6 +122,24 @@ If you want to overwrite previous results:
 ```bash
 python run.py --force
 ```
+
+The generated summary CSV files keep the experiment metadata needed to avoid mixing runs from different learning rates, epoch counts, output directories, or training-set sizes.
+
+## Rapport_V3 workflow
+
+The repository also contains a separate V3 pipeline focused on optimization diagnostics:
+
+```bash
+python run_v3.py --results-root results_v3 --main-output-dir results_v3_main --skip-sweep --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --force
+python run_v3.py --results-root results_v3 --main-output-dir results_v3_main --skip-main --sweep-learning-rates 0.1 --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --force --extra-sweep-dirs results_lr0001
+```
+
+The V3 runner writes additional diagnostics:
+
+- per-step gradient cosine similarities,
+- per-class accuracies by epoch,
+- forgetting summaries,
+- and final hidden-layer embeddings for PCA plots.
 
 ## Suggested report structure
 

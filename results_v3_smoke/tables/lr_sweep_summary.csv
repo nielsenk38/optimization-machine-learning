@@ -1,0 +1,6 @@
+output_dir,experiment_name,order_mode,learning_rate,epochs,max_train_examples,optimizer,model,batch_size,momentum,weight_decay,seed,seed_count,test_accuracy_mean,test_accuracy_std,test_accuracy_count,final_train_loss_mean,final_train_loss_std,collapse_fraction_mean,collapse_rate,collapse_label
+results_v3_smoke_main,results_v3_smoke_main,curriculum_hard,0.05,1,2000,sgd,small_cnn,128,0.9,0.0005,0,1,0.272,,1,1.815465398311615,,0.366,0.0,no
+results_v3_smoke_main,results_v3_smoke_main,fixed_random,0.05,1,2000,sgd,small_cnn,128,0.9,0.0005,0,1,0.5275,,1,1.8679829750061037,,0.3409,0.0,no
+results_v3_smoke_main,results_v3_smoke_main,label_block_random,0.05,1,2000,sgd,small_cnn,128,0.9,0.0005,0,1,0.1,,1,2.454148494720459,,1.0,1.0,yes
+results_v3_smoke_main,results_v3_smoke_main,label_sorted,0.05,1,2000,sgd,small_cnn,128,0.9,0.0005,0,1,0.1,,1,2.451937725067139,,1.0,1.0,yes
+results_v3_smoke_main,results_v3_smoke_main,random,0.05,1,2000,sgd,small_cnn,128,0.9,0.0005,0,1,0.4945,,1,1.824119167327881,,0.3077,0.0,no

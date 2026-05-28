@@ -1,3 +1,3 @@
-order_mode,mean,std,count
-label_block_random,0.10000000000000002,0.0,3
-label_sorted,0.10000000000000002,0.0,3
+output_dir,experiment_name,order_mode,learning_rate,epochs,max_train_examples,optimizer,model,batch_size,momentum,weight_decay,seed,seed_count,test_accuracy_mean,test_accuracy_std,test_accuracy_count
+results_lr005,results_lr005,label_block_random,0.05,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.10000000000000002,0.0,3
+results_lr005,results_lr005,label_sorted,0.05,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.10000000000000002,0.0,3
