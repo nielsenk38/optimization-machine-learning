@@ -1,0 +1,11 @@
+order_mode,seed,experiment_name,output_dir,model,optimizer,epochs,batch_size,max_train_examples,learning_rate,momentum,weight_decay,device,deterministic,save_embeddings,class_id,num_predictions
+fixed_random,2,results_logistic_comparison,results_logistic_comparison,logistic_regression,sgd,10,128,20000,0.05,0.9,0.0005,cuda,False,False,0,831
+fixed_random,2,results_logistic_comparison,results_logistic_comparison,logistic_regression,sgd,10,128,20000,0.05,0.9,0.0005,cuda,False,False,1,974
+fixed_random,2,results_logistic_comparison,results_logistic_comparison,logistic_regression,sgd,10,128,20000,0.05,0.9,0.0005,cuda,False,False,2,1092
+fixed_random,2,results_logistic_comparison,results_logistic_comparison,logistic_regression,sgd,10,128,20000,0.05,0.9,0.0005,cuda,False,False,3,1197
+fixed_random,2,results_logistic_comparison,results_logistic_comparison,logistic_regression,sgd,10,128,20000,0.05,0.9,0.0005,cuda,False,False,4,1083
+fixed_random,2,results_logistic_comparison,results_logistic_comparison,logistic_regression,sgd,10,128,20000,0.05,0.9,0.0005,cuda,False,False,5,1000
+fixed_random,2,results_logistic_comparison,results_logistic_comparison,logistic_regression,sgd,10,128,20000,0.05,0.9,0.0005,cuda,False,False,6,813
+fixed_random,2,results_logistic_comparison,results_logistic_comparison,logistic_regression,sgd,10,128,20000,0.05,0.9,0.0005,cuda,False,False,7,978
+fixed_random,2,results_logistic_comparison,results_logistic_comparison,logistic_regression,sgd,10,128,20000,0.05,0.9,0.0005,cuda,False,False,8,1003
+fixed_random,2,results_logistic_comparison,results_logistic_comparison,logistic_regression,sgd,10,128,20000,0.05,0.9,0.0005,cuda,False,False,9,1029

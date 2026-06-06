@@ -1,0 +1,5 @@
+output_dir,experiment_name,order_mode,learning_rate,epochs,max_train_examples,optimizer,model,batch_size,momentum,weight_decay,seed,seed_count,test_accuracy_mean,test_accuracy_std,test_accuracy_count
+results_adamw_lr0p001,results_adamw_lr0p001,curriculum_hard,0.001,10,20000,adamw,small_cnn,128,0.9,0.0005,"0,1,2",3,0.8628666666666667,0.0033080709383768924,3
+results_adamw_lr0p001,results_adamw_lr0p001,fixed_random,0.001,10,20000,adamw,small_cnn,128,0.9,0.0005,"0,1,2",3,0.8856666666666667,0.002173323108360402,3
+results_adamw_lr0p001,results_adamw_lr0p001,label_block_random,0.001,10,20000,adamw,small_cnn,128,0.9,0.0005,"0,1,2",3,0.4059,0.13317916503717842,3
+results_adamw_lr0p001,results_adamw_lr0p001,random,0.001,10,20000,adamw,small_cnn,128,0.9,0.0005,"0,1,2",3,0.8956666666666666,0.004261846235299146,3

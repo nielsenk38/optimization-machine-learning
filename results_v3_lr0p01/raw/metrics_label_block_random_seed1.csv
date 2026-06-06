@@ -1,0 +1,11 @@
+order_mode,seed,experiment_name,output_dir,model,optimizer,epochs,batch_size,max_train_examples,learning_rate,momentum,weight_decay,device,deterministic,save_embeddings,epoch,train_loss,train_accuracy,grad_norm_mean,grad_norm_std,grad_cosine_mean,grad_cosine_std,grad_variance,test_loss,test_accuracy,epoch_time_sec
+label_block_random,1,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,1,2.720479267264681,0.54105,5.437947750091553,14.633222579956055,0.7737910747528076,0.3880394399166107,242.1659509588234,79.45586623535156,0.1,10.185725212097168
+label_block_random,1,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,2,7.327254304836289,0.43625,19.27245330810547,108.41478729248047,0.6962352991104126,0.4182829260826111,12050.250304159488,2.368338186645508,0.1,10.17902421951294
+label_block_random,1,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,3,,0.6336,,,0.6662719249725342,0.4932214915752411,0.0,,0.1,10.15036916732788
+label_block_random,1,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,4,,0.1,,,,,0.0,,0.1,10.297000646591187
+label_block_random,1,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,5,,0.1,,,,,0.0,,0.1,10.149538278579712
+label_block_random,1,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,6,,0.1,,,,,0.0,,0.1,10.290120363235474
+label_block_random,1,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,7,,0.1,,,,,0.0,,0.1,10.253098964691162
+label_block_random,1,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,8,,0.1,,,,,0.0,,0.1,10.185426712036133
+label_block_random,1,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,9,,0.1,,,,,0.0,,0.1,10.176012516021729
+label_block_random,1,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,10,,0.1,,,,,0.0,,0.1,10.2259361743927

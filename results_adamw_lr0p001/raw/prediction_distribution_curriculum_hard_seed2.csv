@@ -1,0 +1,11 @@
+order_mode,seed,experiment_name,output_dir,model,optimizer,epochs,batch_size,max_train_examples,learning_rate,momentum,weight_decay,device,deterministic,save_embeddings,class_id,num_predictions
+curriculum_hard,2,results_adamw_lr0p001,results_adamw_lr0p001,small_cnn,adamw,10,128,20000,0.001,0.9,0.0005,cuda,False,False,0,1265
+curriculum_hard,2,results_adamw_lr0p001,results_adamw_lr0p001,small_cnn,adamw,10,128,20000,0.001,0.9,0.0005,cuda,False,False,1,966
+curriculum_hard,2,results_adamw_lr0p001,results_adamw_lr0p001,small_cnn,adamw,10,128,20000,0.001,0.9,0.0005,cuda,False,False,2,1216
+curriculum_hard,2,results_adamw_lr0p001,results_adamw_lr0p001,small_cnn,adamw,10,128,20000,0.001,0.9,0.0005,cuda,False,False,3,1185
+curriculum_hard,2,results_adamw_lr0p001,results_adamw_lr0p001,small_cnn,adamw,10,128,20000,0.001,0.9,0.0005,cuda,False,False,4,772
+curriculum_hard,2,results_adamw_lr0p001,results_adamw_lr0p001,small_cnn,adamw,10,128,20000,0.001,0.9,0.0005,cuda,False,False,5,998
+curriculum_hard,2,results_adamw_lr0p001,results_adamw_lr0p001,small_cnn,adamw,10,128,20000,0.001,0.9,0.0005,cuda,False,False,6,614
+curriculum_hard,2,results_adamw_lr0p001,results_adamw_lr0p001,small_cnn,adamw,10,128,20000,0.001,0.9,0.0005,cuda,False,False,7,1044
+curriculum_hard,2,results_adamw_lr0p001,results_adamw_lr0p001,small_cnn,adamw,10,128,20000,0.001,0.9,0.0005,cuda,False,False,8,970
+curriculum_hard,2,results_adamw_lr0p001,results_adamw_lr0p001,small_cnn,adamw,10,128,20000,0.001,0.9,0.0005,cuda,False,False,9,970

@@ -1,0 +1,11 @@
+order_mode,seed,experiment_name,output_dir,model,optimizer,epochs,batch_size,max_train_examples,learning_rate,momentum,weight_decay,device,deterministic,save_embeddings,epoch,train_loss,train_accuracy,grad_norm_mean,grad_norm_std,grad_cosine_mean,grad_cosine_std,grad_variance,test_loss,test_accuracy,epoch_time_sec
+label_block_random,0,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,1,2.5263466740584537,0.59085,6.745843410491943,18.17902183532715,0.7010505795478821,0.4290562868118286,373.4552755404417,185.26268828125,0.1,9.96547532081604
+label_block_random,0,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,2,4.737443966859187,0.4799,12.382400512695312,49.994842529296875,0.630954384803772,0.5254706740379333,2635.1585924842047,2.523594970703125,0.1,10.268990755081177
+label_block_random,0,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,3,10819262.591836996,0.6911,177711728.0,2028325248.0,0.6909373998641968,0.431560754776001,4.1192797423563443e+18,1.9653215077361306e+26,0.1,10.212615728378296
+label_block_random,0,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,4,,0.10025,,,,,0.0,,0.1,10.18319582939148
+label_block_random,0,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,5,,0.1,,,,,0.0,,0.1,10.133814334869385
+label_block_random,0,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,6,,0.1,,,,,0.0,,0.1,10.10917067527771
+label_block_random,0,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,7,,0.1,,,,,0.0,,0.1,10.296404361724854
+label_block_random,0,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,8,,0.1,,,,,0.0,,0.1,10.399704456329346
+label_block_random,0,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,9,,0.1,,,,,0.0,,0.1,9.745109796524048
+label_block_random,0,results_v3_lr0p01,results_v3_lr0p01,small_cnn,sgd,10,128,20000,0.01,0.9,0.0005,cuda,False,False,10,,0.1,,,,,0.0,,0.1,10.307914018630981

@@ -1,0 +1,7 @@
+output_dir,experiment_name,order_mode,learning_rate,epochs,max_train_examples,optimizer,model,batch_size,momentum,weight_decay,seed,seed_count,test_accuracy_mean,test_accuracy_std,test_accuracy_count
+results_logistic_comparison,results_logistic_comparison,curriculum_easy,0.05,10,20000,sgd,logistic_regression,128,0.9,0.0005,"0,1,2",3,0.5841333333333333,0.007597587336341257,3
+results_logistic_comparison,results_logistic_comparison,curriculum_hard,0.05,10,20000,sgd,logistic_regression,128,0.9,0.0005,"0,1,2",3,0.7902999999999999,0.00043588989435401935,3
+results_logistic_comparison,results_logistic_comparison,fixed_random,0.05,10,20000,sgd,logistic_regression,128,0.9,0.0005,"0,1,2",3,0.8097666666666666,0.01620658302460245,3
+results_logistic_comparison,results_logistic_comparison,label_block_random,0.05,10,20000,sgd,logistic_regression,128,0.9,0.0005,"0,1,2",3,0.5803333333333334,0.11052318007247774,3
+results_logistic_comparison,results_logistic_comparison,label_sorted,0.05,10,20000,sgd,logistic_regression,128,0.9,0.0005,"0,1,2",3,0.5293,9.999999999998899e-05,3
+results_logistic_comparison,results_logistic_comparison,random,0.05,10,20000,sgd,logistic_regression,128,0.9,0.0005,"0,1,2",3,0.8092666666666667,0.003181718613160672,3

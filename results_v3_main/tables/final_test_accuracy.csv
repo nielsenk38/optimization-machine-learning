@@ -1,7 +1,7 @@
 output_dir,experiment_name,order_mode,learning_rate,epochs,max_train_examples,optimizer,model,batch_size,momentum,weight_decay,seed,seed_count,test_accuracy_mean,test_accuracy_std,test_accuracy_count
-results_v3_main,results_v3_main,curriculum_easy,0.05,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.7070666666666666,0.027388744646904356,3
-results_v3_main,results_v3_main,curriculum_hard,0.05,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.8453333333333334,0.009265167744479025,3
-results_v3_main,results_v3_main,fixed_random,0.05,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.8845999999999999,0.004875448697299618,3
+results_v3_main,results_v3_main,curriculum_easy,0.05,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.7212666666666667,0.02945884134404021,3
+results_v3_main,results_v3_main,curriculum_hard,0.05,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.8511666666666667,0.0006110100926607931,3
+results_v3_main,results_v3_main,fixed_random,0.05,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.8817333333333334,0.003569780572154711,3
 results_v3_main,results_v3_main,label_block_random,0.05,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.10000000000000002,0.0,3
 results_v3_main,results_v3_main,label_sorted,0.05,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.10000000000000002,0.0,3
-results_v3_main,results_v3_main,random,0.05,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.8946999999999999,0.006781592733274366,3
+results_v3_main,results_v3_main,random,0.05,10,20000,sgd,small_cnn,128,0.9,0.0005,"0,1,2",3,0.8957,0.004158124577258415,3
