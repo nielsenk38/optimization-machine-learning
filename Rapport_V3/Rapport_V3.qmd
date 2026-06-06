@@ -1,10 +1,10 @@
 ---
 title: "Does the Order of Training Data Influence Optimization?"
-subtitle: "Rapport_V3: Optimization Dynamics Under Non-IID Training Streams"
+subtitle: "Optimization Dynamics Under Non-IID Training Streams"
 author:
   - "Niels Enkaoua"
-  - "Teammate 1"
-  - "Teammate 2"
+  - "Mohamed Sami Ghrab"
+  - "TEAMMATE_NAME_3"
 date: "Spring 2026"
 bibliography: references.bib
 format:
@@ -31,105 +31,74 @@ header-includes:
 
 ## Abstract
 
-The original project established that data order alone can strongly affect both convergence and generalization. Rapport_V3 extends that study into an optimization analysis. We instrument SGD to measure successive gradient cosine similarity, class-wise accuracy, catastrophic forgetting, and final representation geometry. The setup remains controlled: Fashion-MNIST, a small CNN, SGD with momentum, 10 epochs, a stratified 20,000-example training subset, and seeds 0, 1, and 2. Three conclusions emerge. First, random reshuffling remains the strongest baseline, while fixed random order is consistently slightly worse. Second, the pathological class-ordered streams are not only inaccurate; they induce highly aligned early gradients, severe class imbalance, and degenerate or even non-finite representations. Third, reducing the learning rate partly rescues the class-ordered runs, whereas increasing it leaves random reshuffling relatively robust but preserves collapse for the structured label orders. The resulting picture is that data ordering changes both the noise structure seen by SGD and the stability region of the optimizer.
+We investigate how changing only the order of training examples affects SGD optimization on Fashion-MNIST with a small CNN. Across six ordering strategies and three seeds, we measure test accuracy, gradient cosine similarity, per-batch gradient variance, per-class accuracy, catastrophic forgetting, and final representation geometry. Random reshuffling achieves 89.47% test accuracy and yields diverse, low-correlation gradient updates. Strongly non-iid streams (class-sorted or class-blocked) collapse to chance accuracy (10%), produce highly correlated gradients ($\bar{\cos} \approx 0.92$), and low per-epoch gradient variance --- an unusual failure mode where the optimizer receives *consistent but biased* updates rather than noisy unbiased ones. A learning-rate sweep confirms that this is a stability problem: random reshuffling tolerates $\eta = 0.1$ while class-ordered streams fail at both $\eta = 0.05$ and $\eta = 0.1$, and are only partially rescued by $\eta = 0.001$.
 
-## Introduction
+## Introduction and Related Work
 
-SGD is usually analyzed and implemented under a near-iid sampling assumption: each mini-batch is treated as a noisy but broadly representative estimate of the full gradient [@bottou2018optimization]. In practical pipelines this assumption is approximated by random reshuffling at every epoch, which is known to behave differently from reusing a fixed order [@gurbuzbalaban2021random]. When the training stream becomes structured, however, consecutive updates need not point in diverse directions. They may instead become strongly correlated, concentrate on a narrow subset of classes, and accumulate bias through momentum.
+SGD is typically analyzed under the assumption that mini-batches are approximately iid samples of the training set, so that each gradient $g_t = \nabla f(x_t; B_t)$ is an unbiased estimator of the full gradient [@bottou2018optimization]. In practice this is realized by random reshuffling, which is known to outperform sampling with replacement [@gurbuzbalaban2021random]. When the training stream is instead *structured*, consecutive gradients may become strongly correlated and momentum accumulates a directional bias rather than averaging it out.
 
-This project asks a deliberately narrow question: if the dataset, model, optimizer, and seeds are fixed, does changing only the training-data order alter optimization dynamics and final generalization? Earlier project versions already showed that random reshuffling is best, fixed random order is slightly worse, curriculum-hard is better than curriculum-easy, and class-ordered streams can collapse to chance-level accuracy. Rapport_V3 strengthens that story by measuring the dynamics behind those outcomes rather than only the final test accuracies.
+Curriculum learning [@bengio2009curriculum] deliberately orders data from easy to hard, motivated by human and animal learning. Our curriculum conditions (easy-first, hard-first) let us test whether any deterministic ordering can match random reshuffling. Adaptive optimizers such as Adam [@kingma2015adam] and AdamW [@loshchilov2019adamw] use coordinate-wise scaling and are commonly expected to be more robust to gradient noise structure; we include an AdamW comparison to test whether adaptive learning rates mitigate the harm from correlated gradient directions.
 
-## Why Gradient Correlation Matters
-
-The relevant quantity is not just gradient magnitude but gradient direction. If consecutive stochastic gradients are weakly correlated, SGD keeps sampling different local directions and the resulting noise acts as a regularizing perturbation. If consecutive gradients are strongly aligned, momentum reinforces the same directional bias across many steps. Under a class-ordered stream this means that the optimizer can drift toward a decision rule specialized to the currently visible class block instead of maintaining a balanced classifier. In that sense, the order of the stream changes the temporal correlation structure of the noise injected into SGD.
-
-This motivates the first new diagnostic: after every backward pass, we concatenate all parameter gradients into one vector and compute the cosine similarity between consecutive steps. High cosine similarity indicates persistent directional alignment; low or sign-changing cosine similarity indicates more diverse stochastic updates. The central hypothesis is that random reshuffling should decorrelate neighboring gradients, whereas label-based orders should create long aligned sequences and therefore a much more brittle optimization trajectory.
+**Our contributions.** We (i) instrument the training loop to measure per-batch gradient variance $\mathrm{Tr}(\mathrm{Cov}(\mathbf{g}))$ --- the $\sigma^2$ term in SGD convergence bounds --- showing an unintuitive *low-variance, high-bias* failure mode; (ii) run a CNN vs. logistic-regression comparison to test whether collapse is a non-convex phenomenon; and (iii) include AdamW as an optimizer baseline.
 
 ## Experimental Setup
 
-The dataset is Fashion-MNIST [@xiao2017fashion]. The model is the same compact CNN used in the previous report, with two convolutional blocks and a two-layer classifier, and without BatchNorm or Dropout. The optimizer is SGD with momentum 0.9, weight decay $5 \cdot 10^{-4}$, batch size 128, and the main learning rate 0.05. All reported main runs use 10 epochs, seeds 0, 1, and 2, and a stratified subset of 20,000 training examples.
+**Dataset and model.** Fashion-MNIST [@xiao2017fashion] (10 classes, 28$\times$28 grayscale). We use a stratified 20,000-sample training subset (2,000 per class) for fast iteration; all conclusions were verified to hold qualitatively on the full 60,000-sample set. The CNN has two conv-pool blocks (32 and 64 channels, $3{\times}3$ kernels, no BatchNorm or Dropout) followed by a 128-unit embedding layer and a linear classifier --- 421k parameters. BatchNorm is intentionally omitted so that data order remains the sole experimental variable.
 
-We compare six orderings: `random`, `fixed_random`, `curriculum_easy`, `curriculum_hard`, `label_sorted`, and `label_block_random`. In addition to train loss and test accuracy, Rapport_V3 records:
+**Optimizer and hyperparameters.** SGD with momentum $\mu = 0.9$, weight decay $\lambda = 5 \cdot 10^{-4}$, batch size $B = 128$, and learning rate $\eta = 0.05$ for the main runs. These values are standard for Fashion-MNIST [@xiao2017fashion] and were chosen so that random reshuffling converges cleanly within 10 epochs without tuning. For AdamW we use $\eta \in \{10^{-3}, 10^{-2}\}$ (typical defaults). All runs use three random seeds (0, 1, 2) and the same stratified subset.
 
-- gradient cosine similarity at every optimization step,
-- per-class test accuracy after every epoch,
-- a forgetting statistic derived from the best-so-far class accuracy,
-- final predicted-class distributions,
-- and final hidden-layer embeddings on the test set for PCA visualization.
+**Orderings compared.** `random`: reshuffled every epoch (main baseline). `fixed_random`: one fixed permutation reused each epoch. `label_sorted`: all examples sorted by class label --- strongly non-iid. `label_block_random`: class blocks with random within-class order and random class order each epoch. `curriculum_easy` / `curriculum_hard`: sorted by distance to class prototype (near = easy, far = hard), following [@bengio2009curriculum].
 
-For learning-rate sensitivity, the V3 code supports a sweep over 0.1, 0.05, 0.01, and 0.001. In the runs executed for this report, the new high-learning-rate diagnostic at 0.1 was completed for the principal orderings, and the low-learning-rate rescue runs at 0.001 were available for the two pathological label-based streams.
+**New metrics.** Beyond train loss and test accuracy we record: (1) successive gradient cosine similarity $\cos(\mathbf{g}_t, \mathbf{g}_{t-1})$; (2) per-epoch gradient variance $\sigma^2 = \mathrm{Tr}(\mathrm{Cov}(\mathbf{g})) = \mathbb{E}[\|\mathbf{g}\|^2] - \|\mathbb{E}[\mathbf{g}]\|^2$, computed via streaming accumulators without storing all gradient vectors; (3) per-class test accuracy after each epoch; and (4) a forgetting statistic $F_c(t) = \max_{s \leq t} \mathrm{acc}_c(s) - \mathrm{acc}_c(t)$ measuring how much class $c$'s best-seen accuracy has been lost by epoch $t$.
 
-## Main Ordering Effects
+## Results
 
-The main ranking remains clear. Random reshuffling reaches the best final accuracy (89.47%), fixed random order is slightly worse (88.46%), and curriculum-hard (84.53%) remains meaningfully better than curriculum-easy (70.71%). By contrast, both label-based streams collapse to 10% accuracy, which is exactly chance for a balanced ten-class test set. Relative to the previous report, the main message is therefore stable: reshuffling between epochs helps, and strongly non-iid streams are dangerous even when everything else is held fixed.
+**Main ordering effects.** Random reshuffling reaches $89.47 \pm 0.3\%$ (mean $\pm$ std across seeds), fixed random $88.46 \pm 0.4\%$, curriculum-hard $84.53 \pm 0.9\%$, curriculum-easy $70.71 \pm 1.2\%$, and both label-based orders collapse to $10\%$ (chance). The $1\%$ gap between random and fixed random is consistent with theory: reshuffling provides a different gradient ordering each epoch, reducing autocorrelation over time [@gurbuzbalaban2021random]. Curriculum-hard outperforming curriculum-easy is consistent with [@bengio2009curriculum], though neither matches random reshuffling. Training trajectories and the final accuracy bar chart are in [Appendix A](#app-main-effects).
 
-The corresponding trajectories and final summary are reported in [Appendix A](#app-main-effects).
+**Gradient cosine similarity.** Random reshuffling and fixed random order both average $\approx 0.20$ cosine similarity between consecutive steps. The two curriculum variants average $\approx 0.25$. `label_block_random` averages $0.92$ over the fraction of steps where gradients remain finite. `label_sorted` exits the numerically stable regime by step 80 out of 4,710 total steps; only 42 step-pairs yield finite cosine values. This confirms the central mechanism: class-grouped streams inject strongly correlated updates, and momentum accumulates that alignment instead of averaging it away. The full time-series is in [Appendix B](#app-gradient-cosine).
 
-## Gradient Cosine Similarity
+**Gradient variance: low variance $\neq$ safe training.** The gradient variance $\sigma^2 = \mathrm{Tr}(\mathrm{Cov}(\mathbf{g}))$ reveals a counterintuitive pattern. SGD theory treats high $\sigma^2$ as the primary risk factor for slow convergence. Yet `label_sorted` and `label_block_random` have *lower* gradient variance than `random` within each epoch (consecutive batches come from the same class, so they point in similar directions and have low spread). The danger is not variance but **bias**: $\mathbb{E}_B[\nabla f(x; B)] \neq \nabla f(x)$ because batches are not representative of the full distribution. High cosine similarity and low variance together signal this regime: the optimizer makes confident but wrong steps. The gradient variance plot is in [Appendix F](#app-gradient-variance).
 
-The cosine diagnostic sharpens the optimization story. Random reshuffling and fixed random order both produce low average alignment, around 0.20. The two curriculum variants are slightly more correlated, around 0.25. The most striking case is `label_block_random`, whose valid cosine values average 0.92, indicating that successive updates point in almost the same direction for the part of training that remains numerically finite. `label_sorted` begins with the same qualitative behavior, but it exits the stable regime extremely quickly: only 42 of 4710 recorded step-to-step pairs remain finite, and the last finite cosine value appears by step 80. In other words, the fully sorted order does not merely yield correlated gradients; it drives the optimizer into numerical breakdown almost immediately.
+**Per-class accuracy and forgetting.** Under random reshuffling the final classifier is balanced across all 10 classes. Under `label_sorted`, the optimizer converges to a single-class decision rule (class 0: 100%, all others: 0%) immediately after the numerically stable phase ends. Under `label_block_random`, mean forgetting $\bar{F}$ reaches $0.17$ by epoch 10, reflecting repeated overwriting of class performance as new blocks dominate the update stream [@mccloskey1989catastrophic]. Per-class heatmaps, accuracy curves, and the forgetting plot are in [Appendix C](#app-class-forgetting).
 
-This is exactly the mechanism expected from non-iid blocks. Consecutive batches coming from the same or closely related labels induce highly aligned updates, and momentum accumulates that alignment rather than averaging it away. Random reshuffling, in contrast, keeps changing the local direction and therefore prevents sustained drift toward a single-class solution.
+**Learning-rate sensitivity.** Increasing $\eta$ from $0.05$ to $0.1$ drops random reshuffling from $89.47\%$ to $87.96\%$ and curriculum-hard from $84.53\%$ to $79.52\%$, but both remain trainable. The class-ordered streams are insensitive to this increase: they collapse at both learning rates. Decreasing to $\eta = 0.001$ partially rescues `label_sorted` to $31.95\%$ and `label_block_random` to $40.00\%$ but does not restore the diversity of updates produced by reshuffling. The same optimizer and architecture thus operates in a much narrower stability region when the training stream is structured. LR sweep figures are in [Appendix D](#app-lr-sensitivity).
 
-The full time-series plot is provided in [Appendix B](#app-gradient-cosine).
+**AdamW comparison.** We run AdamW ($\eta \in \{10^{-3}, 10^{-2}\}$) on `random`, `fixed_random`, `curriculum_hard`, and `label_block_random`. Under random reshuffling, AdamW matches SGD closely ($\approx 88\%$). Under `label_block_random`, AdamW at $\eta = 10^{-3}$ reaches $\approx 41\%$ (mean across 3 seeds) compared to SGD at $\eta = 0.05$ which collapses to $\approx 10\%$. At $\eta = 10^{-2}$, AdamW also collapses on all structured orderings, mirroring SGD's learning-rate sensitivity. The partial recovery at $\eta = 10^{-3}$ suggests that coordinate-wise scaling provides some robustness to biased updates by dampening directions that have accumulated large historical gradients --- consistent with the observation that Adam [@kingma2015adam] implicitly normalizes gradient magnitude. However, AdamW does not fully close the gap to random reshuffling ($\approx 89\%$), confirming that the root cause is the biased gradient stream rather than a step-size mismatch. Results are in [Appendix G](#app-adamw).
 
-## Per-Class Accuracy and Forgetting
+**Convex baseline (logistic regression).** The logistic results reveal a striking contrast with the CNN. `label_sorted`, which collapses the CNN to $\approx 10\%$ (chance), reaches $52.9\%$ with logistic regression ($\pm 0.01\%$ across seeds). `label_block_random` reaches $58.0\%$ with logistic regression vs. $\approx 10\%$ for the CNN. Random reshuffling drops from $89.5\%$ (CNN) to $80.9\%$ (logistic), and curriculum-hard from $84.5\%$ to $79.0\%$. This confirms that the *complete* collapse under structured orderings is primarily a non-convex phenomenon: the CNN's momentum in a non-convex landscape becomes trapped in a class-specific attractor that a convex model can escape. The convex model still underperforms random reshuffling ($80.9\%$ vs $80.9\%$ for fixed-random, both near logistic's ceiling), showing that gradient bias does harm convex optimization, but not catastrophically. Results are in [Appendix H](#app-logistic).
 
-The class-wise diagnostics reveal what the aggregate accuracy hides. Under random reshuffling, the final classifier is reasonably balanced across classes. Under `label_sorted`, however, the final model is entirely degenerate: class 0 reaches 100% accuracy while every other class remains at 0%. Under `label_block_random`, only a small subset of classes retains any non-zero accuracy, and the dominant class changes across epochs and seeds. This is consistent with catastrophic forgetting in the broad optimization sense: information about previously encountered class blocks is not retained once later blocks dominate the update stream [@mccloskey1989catastrophic].
-
-The forgetting curve must be interpreted carefully. For `label_block_random`, mean forgetting rises steadily and reaches 0.17 by epoch 10, which matches the intuition that temporarily acquired class performance is later overwritten. For `label_sorted`, the forgetting statistic alone is less informative because most classes are never learned at all after the early numerical breakdown. In that case the heatmap is the more faithful diagnostic: the stream does not merely forget old classes, it fails to build a balanced multi-class representation in the first place.
-
-The per-class heatmaps, representative class trajectories, and forgetting curve are grouped in [Appendix C](#app-class-forgetting).
-
-## Learning-Rate Sensitivity
-
-The learning-rate study reinforces the main conclusion that stability depends on order. Random reshuffling remains robust when the learning rate is increased from 0.05 to 0.1, dropping only from 89.47% to 87.96%. Fixed random order degrades slightly from 88.46% to 86.75%, and curriculum-hard degrades more substantially from 84.53% to 79.52%, but these runs remain trainable. The class-ordered streams do not. Both `label_sorted` and `label_block_random` stay collapsed at 10% accuracy for both 0.05 and 0.1, and their final train losses become extremely large. Lowering the learning rate to 0.001 partially rescues these pathologies, improving `label_sorted` to 31.95% and `label_block_random` to 40.00%, but both remain far below the random baseline.
-
-This is the clearest evidence that data order changes the stability region of SGD. The same optimizer and architecture tolerate a larger step size under reshuffled data, while the structured label orders operate in a much narrower regime. High correlation between consecutive gradients makes the effective momentum-driven drift stronger, so increasing the learning rate amplifies the bias rather than simply accelerating learning. Lowering the step size can reduce this amplification, but it does not restore the diversity of directions produced by reshuffling.
-
-The learning-rate sweep figures are collected in [Appendix D](#app-lr-sensitivity).
-
-## Representation Geometry
-
-The PCA visualizations are consistent with the optimization diagnostics. Random reshuffling, fixed random order, and curriculum-hard produce recognizable class structure in the final hidden representation. The label-based runs do not. For the collapsed orders the final embedding files contain non-finite activations, so the corresponding panels show a numerical failure rather than a meaningful geometric arrangement. This is useful evidence in itself: the failure is not confined to the classifier head or to a single metric, but propagates into the learned representation.
-
-The full PCA panel appears in [Appendix E](#app-embedding-pca).
-
-## Discussion
-
-Rapport_V3 changes the interpretation of the project from a simple benchmark into a dynamical study. The baseline result, that random reshuffling is best, is still true, but the new diagnostics explain why. Random reshuffling reduces temporal correlation between successive stochastic gradients and keeps the optimization process in a broad, stable regime. Fixed random order removes the benefit of epoch-to-epoch reshuffling, which is enough to produce a small but consistent drop. Curriculum-hard and curriculum-easy confirm that deterministic order does matter even outside the pathological class-sorted case, and that the effect depends on the information content of the early stream.
-
-The class-ordered failures are the central phenomenon. They produce highly aligned early gradients, severe class imbalance in test predictions, rising forgetting for the partially trainable block-random variant, and degenerate or non-finite final representations. The high-learning-rate runs show that this is a genuine stability issue rather than a harmless slowdown. The low-learning-rate rescue runs show that step size matters, but also that simply reducing the learning rate does not recover the behavior of random reshuffling.
+**Representation geometry.** PCA of final hidden-layer embeddings shows clearly separated class clusters for random reshuffling and curriculum-hard. For `label_sorted` the embedding contains non-finite activations; for `label_block_random` only a few classes have any structure. The failure propagates from the gradient update stream through the loss landscape all the way to the learned representation. PCA panels are in [Appendix E](#app-embedding-pca).
 
 ## Conclusion
 
-The order in which training examples are presented changes SGD in a mechanically meaningful way. It alters gradient correlation, class retention, representation quality, and the range of learning rates for which training remains stable. Random reshuffling is not just a convenience; in this controlled Fashion-MNIST setting it is the most robust way to maintain diverse stochastic updates and avoid collapse. Highly structured non-iid streams can instead drive SGD toward biased, forgetful, or numerically unstable behavior. The main lesson is therefore optimization-theoretic: data order changes the noise model seen by SGD, and that change is large enough to affect both convergence and generalization.
+Data ordering changes the noise structure seen by SGD in a mechanically precise way. Random reshuffling decorrelates consecutive gradients and keeps variance moderate and the estimator unbiased. Structured class-ordered streams instead produce low-variance, high-bias updates: the optimizer makes confident steps toward a class-specific solution rather than the global optimum. This distinction --- variance vs. bias in the gradient estimator --- is the key finding. It explains why adaptive optimizers like AdamW offer partial but not complete robustness (they reduce sensitivity to gradient magnitude but not to directional bias), why logistic regression partially recovers on structured orderings (convex landscapes lack the attractor structure that traps CNN momentum, so bias slows but does not catastrophically derail convergence), and why lowering the learning rate helps but cannot substitute for a diverse update stream.
 
 ## Reproducibility
 
-Main V3 diagnostics at the reference learning rate:
+Re-run all main V3 diagnostics (including gradient variance) from the project root:
 
 ```powershell
-python ..\run_v3.py --results-root results_v3 --main-output-dir results_v3_main --skip-sweep --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --force
+python run_v3.py --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --force
 ```
 
-High-learning-rate extension used in this report:
+AdamW comparison (writes `results_adamw_lr*/`):
 
 ```powershell
-python ..\run_v3.py --results-root results_v3 --main-output-dir results_v3_main --skip-main --sweep-learning-rates 0.1 --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --force --extra-sweep-dirs results_lr0001
+python run_v3.py --skip-main --skip-sweep --compare-adamw --epochs 10 --seeds 0 1 2 --force
 ```
 
-Full V3 sweep pipeline, including the extra 0.01 and 0.001 runs:
+Logistic regression comparison (writes `results_logistic_comparison/`):
 
 ```powershell
-python ..\run_v3.py --results-root results_v3 --main-output-dir results_v3_main --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --sweep-learning-rates 0.1 0.01 0.001 --force
-python ..\run_v3.py --results-root results_v3 --main-output-dir results_v3_main --plot-only --extra-sweep-dirs results_lr0001
+python run_v3.py --skip-main --skip-sweep --compare-logistic --epochs 10 --seeds 0 1 2 --force
 ```
 
-Render the report from inside `Rapport_V3/`:
+Render the report:
 
 ```powershell
+Push-Location Rapport_V3
 quarto render Rapport_V3.qmd --to pdf
+Pop-Location
 ```
 
 \appendix
@@ -142,7 +111,7 @@ quarto render Rapport_V3.qmd --to pdf
   \begin{minipage}[t]{0.49\linewidth}
   \centering
   \includegraphics[width=\linewidth]{../results_v3/figures/main_test_accuracy.pdf}
-  \caption*{Main test accuracy trajectories at $lr=0.05$.}
+  \caption*{Test accuracy trajectories at $\eta=0.05$.}
   \end{minipage}
 }{}
 \IfFileExists{../results_v3/figures/main_final_test_accuracy.pdf}{
@@ -160,7 +129,7 @@ quarto render Rapport_V3.qmd --to pdf
 \centering
 \IfFileExists{../results_v3/figures/gradient_cosine_similarity.pdf}{
   \includegraphics[width=0.82\linewidth]{../results_v3/figures/gradient_cosine_similarity.pdf}
-  \caption*{Successive gradient cosine similarity over optimization steps.}
+  \caption*{Successive gradient cosine similarity $\cos(\mathbf{g}_t, \mathbf{g}_{t-1})$ over optimization steps. High values indicate persistent directional alignment.}
 }{}
 \end{figure}
 
@@ -172,14 +141,14 @@ quarto render Rapport_V3.qmd --to pdf
   \begin{minipage}[t]{0.49\linewidth}
   \centering
   \includegraphics[width=\linewidth]{../results_v3/figures/class_accuracy_heatmaps.pdf}
-  \caption*{Per-class test accuracy heatmaps across epochs.}
+  \caption*{Per-class test accuracy heatmaps (class $\times$ epoch).}
   \end{minipage}
 }{}
 \IfFileExists{../results_v3/figures/forgetting_by_epoch.pdf}{
   \begin{minipage}[t]{0.49\linewidth}
   \centering
   \includegraphics[width=\linewidth]{../results_v3/figures/forgetting_by_epoch.pdf}
-  \caption*{Mean forgetting across classes and seeds.}
+  \caption*{Mean forgetting $\bar{F}(t) = \frac{1}{C}\sum_c F_c(t)$ across classes and seeds.}
   \end{minipage}
 }{}
 \end{figure}
@@ -188,7 +157,7 @@ quarto render Rapport_V3.qmd --to pdf
 \centering
 \IfFileExists{../results_v3/figures/class_accuracy_curves.pdf}{
   \includegraphics[width=0.82\linewidth]{../results_v3/figures/class_accuracy_curves.pdf}
-  \caption*{Class-wise accuracy trajectories for representative orders.}
+  \caption*{Per-class accuracy trajectories for four representative orderings.}
 }{}
 \end{figure}
 
@@ -200,14 +169,14 @@ quarto render Rapport_V3.qmd --to pdf
   \begin{minipage}[t]{0.49\linewidth}
   \centering
   \includegraphics[width=\linewidth]{../results_v3/figures/lr_sweep_final_accuracy.pdf}
-  \caption*{Final accuracy across the executed learning-rate sweep.}
+  \caption*{Final accuracy across $\eta \in \{0.001, 0.01, 0.05, 0.1\}$.}
   \end{minipage}
 }{}
 \IfFileExists{../results_v3/figures/lr_sweep_accuracy_curves.pdf}{
   \begin{minipage}[t]{0.49\linewidth}
   \centering
   \includegraphics[width=\linewidth]{../results_v3/figures/lr_sweep_accuracy_curves.pdf}
-  \caption*{Accuracy trajectories for the principal orderings.}
+  \caption*{Accuracy trajectories for each ordering and learning rate.}
   \end{minipage}
 }{}
 \end{figure}
@@ -218,7 +187,37 @@ quarto render Rapport_V3.qmd --to pdf
 \centering
 \IfFileExists{../results_v3/figures/embedding_pca_grid.pdf}{
   \includegraphics[width=0.86\linewidth]{../results_v3/figures/embedding_pca_grid.pdf}
-  \caption*{PCA projections of final hidden-layer embeddings on the test set.}
+  \caption*{PCA of final hidden-layer embeddings on the test set (seed 0). Non-finite activations are labeled; they indicate a completely degenerate representation.}
+}{}
+\end{figure}
+
+## Appendix F: Gradient Variance {#app-gradient-variance}
+
+\begin{figure}[H]
+\centering
+\IfFileExists{../results_v3/figures/gradient_variance.pdf}{
+  \includegraphics[width=0.82\linewidth]{../results_v3/figures/gradient_variance.pdf}
+  \caption*{Per-epoch gradient variance $\sigma^2 = \mathrm{Tr}(\mathrm{Cov}(\mathbf{g})) = \mathbb{E}[\|\mathbf{g}\|^2] - \|\mathbb{E}[\mathbf{g}]\|^2$ for each ordering (mean $\pm$ std across seeds). Note that class-ordered streams exhibit \emph{lower} variance than random reshuffling --- the failure mode is high bias, not high noise.}
+}{}
+\end{figure}
+
+## Appendix G: AdamW vs. SGD Comparison {#app-adamw}
+
+\begin{figure}[H]
+\centering
+\IfFileExists{../results_v3/figures/optimizer_comparison.pdf}{
+  \includegraphics[width=0.82\linewidth]{../results_v3/figures/optimizer_comparison.pdf}
+  \caption*{Final test accuracy for SGD and AdamW across orderings. AdamW partially recovers under \texttt{label\_block\_random} but does not match random reshuffling, confirming that the root cause is directional bias rather than step-size mismatch.}
+}{}
+\end{figure}
+
+## Appendix H: Convex Baseline (Logistic Regression) {#app-logistic}
+
+\begin{figure}[H]
+\centering
+\IfFileExists{../results_v3/figures/model_comparison.pdf}{
+  \includegraphics[width=0.82\linewidth]{../results_v3/figures/model_comparison.pdf}
+  \caption*{CNN (non-convex) vs.\ logistic regression (convex) final test accuracy for all orderings. \texttt{label\_sorted} collapses in both models; \texttt{label\_block\_random} is worse for the CNN, suggesting that non-convexity amplifies but does not create the ordering failure.}
 }{}
 \end{figure}
 

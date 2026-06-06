@@ -462,16 +462,178 @@ def save_embedding_pca_grid(
     plt.close(fig)
 
 
+def save_gradient_variance_plot(metrics: pd.DataFrame, output_path: str | Path) -> None:
+    """Plot per-epoch gradient variance Tr(Cov(g)) for each ordering.
+
+    Measures the sigma^2 term in SGD convergence bounds: E[||g||^2] - ||E[g]||^2.
+    Low value = batch gradients are tightly clustered (may indicate bias, not diversity).
+    High value = diverse, noisy updates as assumed by SGD theory.
+    """
+    if "grad_variance" not in metrics.columns:
+        return
+    valid = metrics.dropna(subset=["grad_variance"]).copy()
+    if valid.empty:
+        return
+
+    summary = (
+        valid.groupby(["order_mode", "epoch"], dropna=False)["grad_variance"]
+        .agg(grad_variance_mean="mean", grad_variance_std="std")
+        .reset_index()
+    )
+
+    fig, ax = plt.subplots(figsize=(7.0, 4.0))
+    for order_mode, group in summary.groupby("order_mode", sort=False):
+        group = group.sort_values("epoch")
+        ax.plot(
+            group["epoch"],
+            group["grad_variance_mean"],
+            marker="o",
+            linewidth=1.5,
+            label=PRETTY_NAMES.get(order_mode, order_mode),
+        )
+        std = group["grad_variance_std"].fillna(0.0)
+        ax.fill_between(
+            group["epoch"],
+            group["grad_variance_mean"] - std,
+            group["grad_variance_mean"] + std,
+            alpha=0.12,
+        )
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Gradient variance Tr(Cov(g))")
+    ax.grid(True, alpha=0.3)
+    ax.legend(fontsize=8, ncol=2)
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=200)
+    plt.close(fig)
+
+
+def save_optimizer_comparison_plot(results_dirs: list[str | Path], output_path: str | Path) -> None:
+    """Bar chart comparing SGD vs AdamW final accuracy across orderings."""
+    frames = []
+    for results_dir in results_dirs:
+        m = load_metrics(results_dir)
+        if m.empty:
+            continue
+        meta = _load_experiment_metadata(results_dir)
+        m = _attach_metadata(m, meta)
+        frames.append(m)
+    if not frames:
+        return
+
+    all_metrics = pd.concat(frames, ignore_index=True)
+    final_epoch = all_metrics.groupby(["order_mode", "optimizer"], dropna=False)["epoch"].transform("max")
+    final = all_metrics[all_metrics["epoch"] == final_epoch].copy()
+
+    summary = (
+        final.groupby(["order_mode", "optimizer"], dropna=False)["test_accuracy"]
+        .agg(mean="mean", std="std")
+        .reset_index()
+    )
+
+    orders = [o for o in MAIN_ORDER_MODES if o in summary["order_mode"].values]
+    optimizers = sorted(summary["optimizer"].dropna().unique().tolist())
+    x = np.arange(len(orders))
+    width = 0.35
+
+    fig, ax = plt.subplots(figsize=(7.5, 4.2))
+    for i, opt in enumerate(optimizers):
+        group = summary[summary["optimizer"] == opt].set_index("order_mode").reindex(orders)
+        offset = (i - (len(optimizers) - 1) / 2.0) * width
+        ax.bar(
+            x + offset,
+            group["mean"].fillna(0.0),
+            width=width,
+            yerr=group["std"].fillna(0.0),
+            capsize=3,
+            label=opt.upper(),
+        )
+    ax.set_xticks(x)
+    ax.set_xticklabels([PRETTY_NAMES.get(o, o) for o in orders], rotation=12, ha="right")
+    ax.set_ylabel("Final test accuracy")
+    ax.set_ylim(0.0, 1.0)
+    ax.axhline(0.1, color="grey", linewidth=0.8, linestyle="--", alpha=0.6, label="Chance (10%)")
+    ax.grid(True, axis="y", alpha=0.3)
+    ax.legend(fontsize=8)
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=200)
+    plt.close(fig)
+
+
+def save_model_comparison_plot(
+    cnn_results_dir: str | Path,
+    logistic_results_dir: str | Path,
+    output_path: str | Path,
+) -> None:
+    """Bar chart comparing CNN vs logistic regression for all orderings."""
+    frames = []
+    for results_dir, label in [(cnn_results_dir, "CNN (non-convex)"), (logistic_results_dir, "Logistic (convex)")]:
+        m = load_metrics(results_dir)
+        if m.empty:
+            continue
+        meta = _load_experiment_metadata(results_dir)
+        m = _attach_metadata(m, meta)
+        m["model_label"] = label
+        frames.append(m)
+    if not frames:
+        return
+
+    all_metrics = pd.concat(frames, ignore_index=True)
+    final_epoch = all_metrics.groupby(["order_mode", "model_label"], dropna=False)["epoch"].transform("max")
+    final = all_metrics[all_metrics["epoch"] == final_epoch].copy()
+
+    summary = (
+        final.groupby(["order_mode", "model_label"], dropna=False)["test_accuracy"]
+        .agg(mean="mean", std="std")
+        .reset_index()
+    )
+
+    orders = MAIN_ORDER_MODES
+    model_labels = ["CNN (non-convex)", "Logistic (convex)"]
+    x = np.arange(len(orders))
+    width = 0.35
+
+    fig, ax = plt.subplots(figsize=(7.5, 4.2))
+    for i, model_label in enumerate(model_labels):
+        group = summary[summary["model_label"] == model_label].set_index("order_mode").reindex(orders)
+        offset = (i - 0.5) * width
+        ax.bar(
+            x + offset,
+            group["mean"].fillna(0.0),
+            width=width,
+            yerr=group["std"].fillna(0.0),
+            capsize=3,
+            label=model_label,
+        )
+    ax.set_xticks(x)
+    ax.set_xticklabels([PRETTY_NAMES.get(o, o) for o in orders], rotation=12, ha="right")
+    ax.set_ylabel("Final test accuracy")
+    ax.set_ylim(0.0, 1.0)
+    ax.axhline(0.1, color="grey", linewidth=0.8, linestyle="--", alpha=0.6, label="Chance (10%)")
+    ax.grid(True, axis="y", alpha=0.3)
+    ax.legend(fontsize=8)
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=200)
+    plt.close(fig)
+
+
 def make_v3_outputs(
     main_results_dir: str | Path,
     sweep_results_dirs: list[str | Path],
     output_dir: str | Path,
+    adamw_results_dirs: list[str | Path] | None = None,
+    logistic_results_dir: str | Path | None = None,
 ) -> None:
     output_dir = Path(output_dir)
     figures_dir = ensure_dir(output_dir / "figures")
     tables_dir = ensure_dir(output_dir / "tables")
 
     _save_main_comparison_plots(Path(main_results_dir), figures_dir, tables_dir)
+
+    # Gradient variance (new metric — requires re-running experiments with updated code)
+    main_metrics = load_metrics(main_results_dir)
+    if not main_metrics.empty and "grad_variance" in main_metrics.columns:
+        main_metrics.to_csv(tables_dir / "main_metrics_full.csv", index=False)
+        save_gradient_variance_plot(main_metrics, figures_dir / "gradient_variance.pdf")
 
     gradient_cosines = load_gradient_cosines(main_results_dir)
     class_accuracy = load_class_accuracy(main_results_dir)
@@ -498,3 +660,12 @@ def make_v3_outputs(
     _save_lr_curve_grid(metrics, "train_loss", "Training loss", figures_dir / "lr_sweep_train_loss_curves.pdf")
 
     save_embedding_pca_grid(main_results_dir, figures_dir / "embedding_pca_grid.pdf", seed=0)
+
+    # Optional: AdamW vs SGD comparison
+    if adamw_results_dirs:
+        all_dirs = [main_results_dir, *adamw_results_dirs]
+        save_optimizer_comparison_plot(all_dirs, figures_dir / "optimizer_comparison.pdf")
+
+    # Optional: CNN vs logistic regression comparison
+    if logistic_results_dir is not None:
+        save_model_comparison_plot(main_results_dir, logistic_results_dir, figures_dir / "model_comparison.pdf")

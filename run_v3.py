@@ -2,6 +2,14 @@
 
 This script keeps the original project intact and writes new outputs to
 dedicated V3 directories.
+
+New flags compared to the original:
+  --compare-adamw     Run SGD vs AdamW for the key orderings (random,
+                      fixed_random, curriculum_hard, label_block_random).
+                      Results go to results_adamw_comparison/.
+  --compare-logistic  Run logistic regression (convex baseline) on all
+                      orderings at the same learning rate. Results go to
+                      results_logistic_comparison/.
 """
 
 from __future__ import annotations
@@ -11,7 +19,13 @@ from pathlib import Path
 
 from src.data import load_fashion_mnist, make_test_loader, make_train_loader
 from src.plotting import make_all_plots
-from src.plotting_v3 import MAIN_ORDER_MODES, SWEEP_ORDER_MODES, make_v3_outputs
+from src.plotting_v3 import (
+    MAIN_ORDER_MODES,
+    SWEEP_ORDER_MODES,
+    make_v3_outputs,
+    save_optimizer_comparison_plot,
+    save_model_comparison_plot,
+)
 from src.train import TrainConfig, get_run_artifact_paths, run_single_experiment
 from src.utils import ensure_dir, get_device, save_json
 
@@ -51,6 +65,26 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--plot-only", action="store_true")
     parser.add_argument("--skip-main", action="store_true")
     parser.add_argument("--skip-sweep", action="store_true")
+    # New comparison modes
+    parser.add_argument(
+        "--compare-adamw",
+        action="store_true",
+        help=(
+            "Run AdamW on the key orderings and compare with SGD. "
+            "Tests whether adaptive learning rates mitigate the harm from correlated gradients. "
+            "Results written to results_adamw_comparison/."
+        ),
+    )
+    parser.add_argument(
+        "--compare-logistic",
+        action="store_true",
+        help=(
+            "Run logistic regression (a convex model) on all orderings. "
+            "Tests whether the collapse under structured orders is a deep-learning "
+            "phenomenon or a general optimization failure. "
+            "Results written to results_logistic_comparison/."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -67,9 +101,12 @@ def run_experiment_directory(
     order_modes: list[str],
     seeds: list[int],
     learning_rate: float,
+    optimizer_name: str,
+    model_name: str,
     args: argparse.Namespace,
     save_embeddings: bool,
 ) -> None:
+    """Run one batch of experiments and write results to output_dir."""
     raw_dir = ensure_dir(output_dir / "raw")
     save_json(
         {
@@ -81,8 +118,8 @@ def run_experiment_directory(
             "batch_size": args.batch_size,
             "max_train_examples": args.max_train_examples,
             "subset_seed": args.subset_seed,
-            "optimizer": args.optimizer,
-            "model": args.model,
+            "optimizer": optimizer_name,
+            "model": model_name,
             "lr": learning_rate,
             "momentum": args.momentum,
             "weight_decay": args.weight_decay,
@@ -104,8 +141,8 @@ def run_experiment_directory(
                 seed=seed,
                 experiment_name=experiment_name,
                 output_dir=str(output_dir),
-                model=args.model,
-                optimizer=args.optimizer,
+                model=model_name,
+                optimizer=optimizer_name,
                 epochs=args.epochs,
                 batch_size=args.batch_size,
                 max_train_examples=max_train_examples_record,
@@ -128,7 +165,7 @@ def run_experiment_directory(
                 batch_size=args.batch_size,
                 num_workers=args.num_workers,
             )
-            print(f"\nRunning dir={experiment_name}, order={order_mode}, lr={learning_rate:g}, seed={seed}")
+            print(f"\nRunning dir={experiment_name}, order={order_mode}, opt={optimizer_name}, lr={learning_rate:g}, seed={seed}")
             run_single_experiment(
                 config=config,
                 train_loader=train_loader,
@@ -147,6 +184,10 @@ def main() -> None:
     main_output_dir = Path(args.main_output_dir)
     sweep_output_dirs = [Path(f"results_v3_lr{lr_tag(lr)}") for lr in args.sweep_learning_rates]
 
+    # Directories for optional comparison experiments
+    adamw_output_dir = Path("results_adamw_comparison")
+    logistic_output_dir = Path("results_logistic_comparison")
+
     if not args.plot_only:
         device = get_device(args.device)
         print(f"Using device: {device}")
@@ -159,8 +200,7 @@ def main() -> None:
         )
         test_loader = make_test_loader(bundle, batch_size=args.batch_size, num_workers=args.num_workers)
 
-        if not args.skip_main:
-            run_experiment_directory(
+        if not args.skip_main:            run_experiment_directory(
                 output_dir=main_output_dir,
                 experiment_name=main_output_dir.name,
                 bundle=bundle,
@@ -168,6 +208,8 @@ def main() -> None:
                 order_modes=list(MAIN_ORDER_MODES),
                 seeds=list(args.seeds),
                 learning_rate=0.05,
+                optimizer_name=args.optimizer,
+                model_name=args.model,
                 args=args,
                 save_embeddings=True,
             )
@@ -182,17 +224,63 @@ def main() -> None:
                     order_modes=list(SWEEP_ORDER_MODES),
                     seeds=list(args.seeds),
                     learning_rate=learning_rate,
+                    optimizer_name=args.optimizer,
+                    model_name=args.model,
                     args=args,
                     save_embeddings=False,
                 )
+
+        if args.compare_adamw:
+            adamw_orders = ["random", "fixed_random", "curriculum_hard", "label_block_random"]
+            for adamw_lr in [1e-3, 1e-2]:
+                adamw_dir = Path(f"results_adamw_lr{lr_tag(adamw_lr)}")
+                run_experiment_directory(
+                    output_dir=adamw_dir,
+                    experiment_name=adamw_dir.name,
+                    bundle=bundle,
+                    test_loader=test_loader,
+                    order_modes=adamw_orders,
+                    seeds=list(args.seeds),
+                    learning_rate=adamw_lr,
+                    optimizer_name="adamw",
+                    model_name=args.model,
+                    args=args,
+                    save_embeddings=False,
+                )
+
+        if args.compare_logistic:
+            run_experiment_directory(
+                output_dir=logistic_output_dir,
+                experiment_name=logistic_output_dir.name,
+                bundle=bundle,
+                test_loader=test_loader,
+                order_modes=list(MAIN_ORDER_MODES),
+                seeds=list(args.seeds),
+                learning_rate=0.05,
+                optimizer_name="sgd",
+                model_name="logistic_regression",
+                args=args,
+                save_embeddings=False,
+            )
+
     else:
         if not main_output_dir.exists():
             raise FileNotFoundError(f"Main V3 results directory not found: {main_output_dir}")
 
-    sweep_dirs_for_summary = [main_output_dir] + [output_dir for output_dir in sweep_output_dirs if output_dir.exists()]
-    sweep_dirs_for_summary.extend(Path(path) for path in args.extra_sweep_dirs if Path(path).exists())
+    sweep_dirs_for_summary = [main_output_dir] + [d for d in sweep_output_dirs if d.exists()]
+    sweep_dirs_for_summary.extend(Path(p) for p in args.extra_sweep_dirs if Path(p).exists())
+
+    adamw_dirs = [d for d in [Path(f"results_adamw_lr{lr_tag(lr)}") for lr in [1e-3, 1e-2]] if d.exists()]
+    logistic_dir = logistic_output_dir if logistic_output_dir.exists() else None
+
     print("Generating Rapport_V3 figures and tables...")
-    make_v3_outputs(main_output_dir, sweep_dirs_for_summary, results_root)
+    make_v3_outputs(
+        main_output_dir,
+        sweep_dirs_for_summary,
+        results_root,
+        adamw_results_dirs=adamw_dirs if adamw_dirs else None,
+        logistic_results_dir=logistic_dir,
+    )
     print(f"Done. V3 results are in: {results_root}")
 
 

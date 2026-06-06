@@ -121,6 +121,12 @@ def train_one_epoch(
     cosine_rows: list[dict[str, Any]] = []
     global_step = global_step_start
 
+    # Gradient-variance accumulators: track E[||g||²] - ||E[g]||² = Tr(Cov(g))
+    # Uses O(d) memory regardless of epoch length (no list of all gradient vectors).
+    grad_sum: torch.Tensor | None = None
+    grad_sq_norm_sum: float = 0.0
+    grad_variance_count: int = 0
+
     iterator = tqdm(loader, desc=f"epoch {epoch:02d} train", leave=False) if show_progress else loader
     for batch_index, (inputs, targets) in enumerate(iterator, start=1):
         inputs = inputs.to(device, non_blocking=True)
@@ -133,6 +139,16 @@ def train_one_epoch(
 
         gradient_vector = flatten_gradients(model)
         grad_norms.append(float(torch.linalg.vector_norm(gradient_vector).detach().cpu()) if gradient_vector.numel() else 0.0)
+
+        # Accumulate for Tr(Cov(g)) = E[||g||²] - ||E[g]||²
+        if gradient_vector.numel() > 0:
+            gv_cpu = gradient_vector.detach().cpu().float()
+            if grad_sum is None:
+                grad_sum = gv_cpu.clone()
+            else:
+                grad_sum.add_(gv_cpu)
+            grad_sq_norm_sum += float(torch.dot(gv_cpu, gv_cpu))
+            grad_variance_count += 1
 
         cosine_similarity = np.nan
         if previous_gradient is not None and previous_gradient.numel() and gradient_vector.numel():
@@ -163,6 +179,16 @@ def train_one_epoch(
 
     grad_tensor = torch.tensor(grad_norms, dtype=torch.float32)
     cosine_tensor = torch.tensor(cosine_values, dtype=torch.float32) if cosine_values else torch.zeros(0, dtype=torch.float32)
+
+    # Gradient variance: Tr(Cov(g)) = E[||g||²] - ||E[g]||²
+    # This measures how spread the per-batch gradients are around their mean —
+    # the σ² term that appears in SGD convergence bounds.
+    grad_variance = np.nan
+    if grad_variance_count > 0 and grad_sum is not None:
+        mean_sq_norm = grad_sq_norm_sum / grad_variance_count
+        mean_grad_sq_norm = float(torch.dot(grad_sum, grad_sum)) / (grad_variance_count ** 2)
+        grad_variance = max(0.0, mean_sq_norm - mean_grad_sq_norm)
+
     metrics = {
         "train_loss": total_loss / total_examples,
         "train_accuracy": total_correct / total_examples,
@@ -170,6 +196,7 @@ def train_one_epoch(
         "grad_norm_std": float(grad_tensor.std(unbiased=False)) if len(grad_norms) else 0.0,
         "grad_cosine_mean": float(cosine_tensor.mean()) if len(cosine_values) else np.nan,
         "grad_cosine_std": float(cosine_tensor.std(unbiased=False)) if len(cosine_values) else np.nan,
+        "grad_variance": grad_variance,
     }
     return metrics, cosine_rows, previous_gradient, global_step
 
