@@ -1,0 +1,6 @@
+PWD C:/Users/ghrab/OneDrive/Documents/GitHub/optimization-machine-learning_sami
+INPUT c:/Users/ghrab/AppData/Roaming/TinyTeX/texmf.cnf
+INPUT c:/Users/ghrab/AppData/Roaming/TinyTeX/texmf-dist/web2c/texmf.cnf
+INPUT c:/Users/ghrab/AppData/Roaming/TinyTeX/texmf-var/web2c/pdftex/pdflatex.fmt
+INPUT final_report.tex
+OUTPUT final_report.log

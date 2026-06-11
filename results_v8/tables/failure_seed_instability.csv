@@ -1,0 +1,7 @@
+order_mode,seed,finite_pairs,total_pairs,last_finite_step
+label_sorted,0,13,1570,64
+label_sorted,1,18,1570,80
+label_sorted,2,11,1570,48
+label_block_random,0,8,1570,19
+label_block_random,1,15,1570,48
+label_block_random,2,1516,1570,1570

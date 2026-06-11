@@ -1,2 +1,0 @@
-order_mode,seed,experiment_name,output_dir,model,optimizer,epochs,batch_size,max_train_examples,learning_rate,momentum,weight_decay,device,deterministic,epoch,train_loss,train_accuracy,grad_norm_mean,grad_norm_std,test_loss,test_accuracy,epoch_time_sec
-random,0,results_benchmark,results_benchmark,small_cnn,sgd,1,128,20000,0.05,0.9,0.0005,cpu,False,1,0.7583400722503663,0.73785,1.5327870845794678,1.6571378707885742,0.4166679644584656,0.8475,10.23685598373413

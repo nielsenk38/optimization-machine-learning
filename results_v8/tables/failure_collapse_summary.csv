@@ -1,0 +1,7 @@
+order_mode,seed,finite_pairs,total_pairs,nan_pairs,last_finite_step,dominant_class_lr005,dominant_fraction_lr005,dominant_class_lr0001,dominant_fraction_lr0001,nonzero_classes_lr0001
+label_sorted,0,13,1570,1557,64,0,1.0,6,0.5322,6
+label_sorted,1,18,1570,1552,80,0,1.0,8,0.3932,7
+label_sorted,2,11,1570,1559,48,0,1.0,6,0.3633,6
+label_block_random,0,8,1570,1562,19,0,1.0,2,0.3838,6
+label_block_random,1,15,1570,1555,48,0,1.0,2,0.3028,7
+label_block_random,2,1516,1570,54,1570,1,1.0,6,0.4015,5

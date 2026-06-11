@@ -1,194 +1,131 @@
-# Optimization Mini-Project: Does Training-Data Order Matter?
+# Does the Order of Training Data Influence Optimization?
 
-This project studies how the order in which training examples are presented affects the optimization trajectory and generalization of a neural network.
+EPFL — Optimization for Machine Learning, Mini-Project, Spring 2026
+Authors: Niels Enkaoua, Rémi Germi, Mohamed Sami Ghrab
 
-The code is intentionally written in English and organized so that `run.py` reproduces all CSV results and plots used in the report.
+This project studies how the order in which training examples are presented
+affects the optimization trajectory and generalization of a neural network.
+The final report is `final_report.pdf` (source: `final_report.tex`).
 
 ## Research question
 
-**How does the training-data order influence optimization speed, gradient behavior, and test accuracy when the model, optimizer, dataset, and hyperparameters are kept fixed?**
+**How does the training-data order influence optimization speed, gradient
+behavior, and test accuracy when the model, optimizer, dataset, and
+hyperparameters are kept fixed?**
 
 ## Experimental variable
 
 The only experimental variable is the order of the training samples:
 
-1. `random`: standard random reshuffling at every epoch. This is the main baseline.
-2. `fixed_random`: one random permutation reused at every epoch. This controls for the effect of reshuffling.
-3. `label_sorted`: all examples are sorted by label. This is a strongly non-iid order.
-4. `label_block_random`: class blocks are used, but the class order and within-class order change every epoch.
-5. `curriculum_easy`: examples close to their class prototype are seen first.
-6. `curriculum_hard`: examples far from their class prototype are seen first.
+1. `random`: standard random reshuffling at every epoch (main baseline).
+2. `fixed_random`: one random permutation reused at every epoch.
+3. `label_sorted`: all examples sorted by label (strongly non-iid).
+4. `label_block_random`: class blocks; class order and within-class order change every epoch.
+5. `curriculum_easy`: examples close to their class prototype first.
+6. `curriculum_hard`: examples far from their class prototype first.
+
+Two control studies test robustness of the findings:
+
+- **Optimizer control**: AdamW at learning rates 1e-3 and 1e-2 (vs. momentum SGD).
+- **Model-class control**: convex logistic regression (vs. the non-convex CNN).
 
 ## Fixed components
 
-- Dataset: Fashion-MNIST
+- Dataset: Fashion-MNIST (stratified 20,000-example training subset)
 - Default model: small CNN without BatchNorm or Dropout
-- Default optimizer: SGD with momentum
-- Main metrics: train loss, test accuracy, mean gradient norm
-- Repeated seeds: 0, 1, 2 by default
+- Default optimizer: SGD with momentum 0.9, weight decay 5e-4, batch size 128
+- Metrics: train loss, test accuracy, gradient norms, gradient cosine
+  similarity, per-class accuracy, forgetting, prediction distributions
+- Seeds: 0, 1, 2
 
-## Folder structure
+## Repository structure
 
 ```text
 .
-├── run.py
+├── final_report.tex / final_report.pdf   # the report
+├── run.py                                # basic experiment runner
+├── run_v3.py                             # extended diagnostics runner
+├── build_report_v8_assets.py             # rebuilds all report figures from stored results
+├── references.bib
 ├── requirements.txt
-├── README.md
-└── src
-    ├── data.py
-    ├── models.py
-    ├── plotting.py
-    ├── train.py
+└── src/
+    ├── data.py          # dataset loading and order samplers
+    ├── models.py        # SmallCNN and LogisticRegression
+    ├── train.py         # training loop and metric recording
+    ├── plotting.py      # basic plots
+    ├── plotting_v3.py   # diagnostic plots (cosine, forgetting, per-class)
+    ├── plotting_v8.py   # report figures
     └── utils.py
 ```
 
-After running experiments, the project creates:
+Result directories used by the report (committed so figures can be rebuilt
+without retraining): `results_v3_main`, `results_v3_lr0p1`, `results_lr0001`,
+`results_adamw_lr0p001`, `results_adamw_lr0p01`, `results_logistic_comparison`.
 
-```text
-results/
-├── raw/                  # one CSV per order and seed
-├── figures/              # PNG and PDF plots for the report
-└── tables/               # summary CSV files
-```
-
-## Setup in VSCode
-
-From the project folder:
+## Setup
 
 ```bash
 python -m venv .venv
-```
-
-Activate the environment.
-
-On macOS/Linux:
-
-```bash
+# macOS/Linux:
 source .venv/bin/activate
-```
-
-On Windows PowerShell:
-
-```powershell
+# Windows PowerShell:
 .venv\Scripts\Activate.ps1
-```
 
-Install dependencies:
-
-```bash
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-If you have a CUDA GPU, install the PyTorch build recommended by the official PyTorch installation selector, then install the remaining requirements.
+## Reproduce the report
+
+All numbers and figures in `final_report.pdf` come from the result
+directories listed above. To rebuild the figures from the stored results
+(no retraining, takes seconds):
+
+```bash
+python build_report_v8_assets.py
+```
+
+Then compile the report:
+
+```bash
+pdflatex final_report.tex
+pdflatex final_report.tex
+```
+
+To rerun the experiments from scratch:
+
+```bash
+# Main experiment and lr=0.1 sweep (results_v3_main, results_v3_lr0p1):
+python run_v3.py --epochs 10 --seeds 0 1 2 --max-train-examples 20000
+
+# lr=0.001 rescue runs for the label-based orders (results_lr0001):
+python run.py --epochs 10 --seeds 0 1 2 --max-train-examples 20000 \
+    --orders label_sorted label_block_random --lr 0.001 --output-dir results_lr0001
+
+# Optimizer and model-class controls (Table II of the report):
+python run_v3.py --skip-main --skip-sweep --compare-adamw --compare-logistic
+```
+
+Final test accuracies are written to `<results_dir>/tables/final_test_accuracy.csv`.
 
 ## Quick smoke test
-
-Run a small experiment first:
 
 ```bash
 python run.py --epochs 1 --seeds 0 --max-train-examples 2000 --orders random fixed_random --no-progress
 ```
 
-Expected output:
+## Key findings
 
-- `results/raw/metrics_random_seed0.csv`
-- `results/raw/metrics_fixed_random_seed0.csv`
-- plots in `results/figures/`
+- Random reshuffling is the strongest, most stable baseline (89.5% test
+  accuracy); a fixed random order is consistently slightly worse.
+- Hard-to-easy curriculum clearly outperforms easy-to-hard.
+- Label-sorted and label-block streams collapse to chance accuracy at the
+  reference learning rate, producing degenerate single-class predictors and
+  non-finite gradient diagnostics; lowering the learning rate softens but
+  does not repair the failure.
+- AdamW partially rescues class-blocked streams at lr 1e-3 but has an even
+  narrower stability region at lr 1e-2.
+- A convex logistic-regression model degrades under the same orders but never
+  collapses: the catastrophic failure mode requires non-convexity.
 
-## Main experiment for the report
-
-Recommended command for the reported main experiment:
-
-```bash
-python run.py --epochs 10 --seeds 0 1 2 --max-train-examples 20000
-```
-
-Learning-rate diagnostic commands for the label-ordered failure mode:
-
-```bash
-python run.py --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --orders label_sorted label_block_random --lr 0.05 --output-dir results_lr005
-python run.py --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --orders label_sorted label_block_random --lr 0.001 --output-dir results_lr0001
-```
-
-If you only want to regenerate figures after training:
-
-```bash
-python run.py --plot-only
-```
-
-If you want to overwrite previous results:
-
-```bash
-python run.py --force
-```
-
-The generated summary CSV files keep the experiment metadata needed to avoid mixing runs from different learning rates, epoch counts, output directories, or training-set sizes.
-
-## Rapport_V3 workflow
-
-The repository also contains a separate V3 pipeline focused on optimization diagnostics:
-
-```bash
-python run_v3.py --results-root results_v3 --main-output-dir results_v3_main --skip-sweep --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --force
-python run_v3.py --results-root results_v3 --main-output-dir results_v3_main --skip-main --sweep-learning-rates 0.1 --epochs 10 --seeds 0 1 2 --max-train-examples 20000 --force --extra-sweep-dirs results_lr0001
-```
-
-The V3 runner writes additional diagnostics:
-
-- per-step gradient cosine similarities,
-- per-class accuracies by epoch,
-- forgetting summaries,
-- and final hidden-layer embeddings for PCA plots.
-
-## Suggested report structure
-
-### 1. Introduction
-
-Explain why sample order matters for stochastic optimization. State the hypothesis:
-
-> Non-iid orders such as class-sorted batches should make optimization noisier and less stable than random reshuffling, while curriculum orders may change early optimization speed without necessarily improving final test accuracy.
-
-### 2. Method
-
-Describe the dataset, model, optimizer, hyperparameters, order strategies, metrics, and seeds. Mention that all components are fixed except sample order.
-
-### 3. Results
-
-Use these plots:
-
-- `results/figures/train_loss.pdf`
-- `results/figures/test_accuracy.pdf`
-- `results/figures/grad_norm.pdf`
-- `results/figures/final_test_accuracy.pdf`
-
-Suggested comparisons:
-
-- `random` vs `fixed_random`: effect of reshuffling.
-- `random` vs `label_sorted`: effect of a pathological non-iid order.
-- `curriculum_easy` vs `curriculum_hard`: effect of a simple difficulty-based ordering.
-
-### 4. Discussion
-
-Discuss whether the observed behavior supports the hypothesis. Be explicit about limitations:
-
-- Fashion-MNIST is small and clean.
-- The class-prototype curriculum is only a proxy for difficulty.
-- Results may differ for larger models or data augmentation.
-
-## Possible extensions
-
-If time allows, add one of the following:
-
-1. Repeat the experiment with `--optimizer adamw --lr 0.001`.
-2. Repeat with `--model logistic_regression` to compare a simpler convex-ish baseline.
-3. Add a second dataset such as MNIST or CIFAR-10.
-
-## Notes for Codex
-
-Good next prompts for Codex in VSCode:
-
-- "Add a table that reports the mean and standard deviation of final test accuracy for each data order."
-- "Add an option to save per-batch loss curves for the first epoch."
-- "Check whether all random seeds are correctly controlled."
-- "Add a second optimizer experiment with AdamW without duplicating code."
+See `final_report.pdf` for the full analysis.

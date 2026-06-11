@@ -1,2 +1,0 @@
-output_dir,experiment_name,order_mode,learning_rate,epochs,max_train_examples,optimizer,model,batch_size,momentum,weight_decay,seed,seed_count,test_accuracy_mean,test_accuracy_std,test_accuracy_count
-results_benchmark,results_benchmark,random,0.05,1,20000,sgd,small_cnn,128,0.9,0.0005,0,1,0.8475,,1

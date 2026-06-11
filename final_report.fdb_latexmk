@@ -1,0 +1,11 @@
+# Fdb version 4
+["pdflatex"] 0 "final_report.tex" "final_report.pdf" "final_report" 0 -1
+  "IEEEtran.cls" 0 -1 0 ""
+  "final_report.aux" 0 -1 0 "pdflatex"
+  "final_report.tex" 0 -1 0 ""
+  "q.cls" 0 -1 0 ""
+  (generated)
+  "final_report.aux"
+  "final_report.log"
+  "final_report.pdf"
+  (rewritten before read)
