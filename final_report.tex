@@ -277,21 +277,10 @@ implementation detail but a direct control knob on optimization stability
 and generalization.
 
 \paragraph{Reproducibility}
-The main 10-epoch outputs are produced by
-\texttt{python run\_v3.py} (directories \texttt{results\_v3\_main} and
-\texttt{results\_v3\_lr0p1}) together with
-\texttt{python run.py -{}-epochs 10 -{}-seeds 0 1 2
--{}-max-train-examples 20000 -{}-orders label\_sorted
-label\_block\_random -{}-lr 0.001 -{}-output-dir results\_lr0001}.
-The optimizer and model-class controls of
-Section~\ref{sec:robustness} are produced by
-\texttt{python run\_v3.py -{}-skip-main -{}-skip-sweep
--{}-compare-adamw -{}-compare-logistic} (directories \texttt{results\_adamw\_lr0p001},
-\texttt{results\_adamw\_lr0p01}, and
-\texttt{results\_logistic\_comparison}; Table~\ref{tab:robustness} reports
-their \texttt{tables/final\_test\_accuracy.csv}).
-All report figures are rebuilt from the stored outputs with
-\texttt{python build\_report\_v8\_assets.py}; no experiments are rerun.
+The code, all stored experiment outputs, and the complete commands to
+reproduce every figure and table in this report are available in the
+accompanying repository; see its \texttt{README} for step-by-step
+instructions.
 
 \appendices
 \section{Additional Accuracy and Learning-Rate Curves}
@@ -322,16 +311,19 @@ orders and the learning-rate sensitivity of the two failing orders
 \section{Label-Order Class Diagnostics}
 \label{app:failure}
 This appendix shows the per-class accuracy evolution of the two
-label-based orders (Fig.~\ref{fig:app-heatmaps}): the models specialize to
-a narrow class subset rather than learning a balanced classifier.
+label-based orders, with one heatmap per seed
+(Fig.~\ref{fig:app-heatmaps}): each individual run specializes to a single
+class rather than learning a balanced classifier, and the selected class
+can differ between seeds, which a seed-averaged heatmap would hide.
 
 \begin{figure}[!h]
   \centering
   \includegraphics[width=\columnwidth]{results_v8/figures/failure_class_heatmaps.pdf}
   \caption{Per-class test accuracy across epochs for the two label-based
-  orders at learning rate $0.05$.
-  The models specialize to a narrow class subset rather than learning a
-  balanced classifier.}
+  orders at learning rate $0.05$, shown separately for each seed.
+  Every run collapses onto a single class;
+  \texttt{label\_block\_random} selects class 0 for seeds 0 and 1 but a
+  different class for seed 2.}
   \label{fig:app-heatmaps}
 \end{figure}
 \FloatBarrier

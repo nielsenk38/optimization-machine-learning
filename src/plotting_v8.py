@@ -335,32 +335,50 @@ def save_failure_lr_trajectories(
 
 
 def save_failure_class_heatmaps(main_results_dir: str | Path, output_path: str | Path) -> pd.DataFrame:
+    """One heatmap per (order, seed) so divergent collapse modes are not averaged away.
+
+    Averaging across seeds is misleading here: for label_block_random, seeds 0
+    and 1 collapse to class 0 while seed 2 collapses to a different class, and
+    the seed-mean would suggest a mixture that no single run ever produces.
+    """
     class_accuracy = load_class_accuracy(main_results_dir)
     class_accuracy = class_accuracy[class_accuracy["order_mode"].isin(FAILURE_ORDER_MODES)].copy()
-    summary = summarize_class_accuracy(class_accuracy)
+    seeds = sorted(class_accuracy["seed"].unique())
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.8, 3.5), sharex=True, sharey=True)
+    fig, axes = plt.subplots(
+        len(FAILURE_ORDER_MODES),
+        len(seeds),
+        figsize=(8.8, 5.4),
+        sharex=True,
+        sharey=True,
+    )
     image = None
-    for axis, order_mode in zip(axes, FAILURE_ORDER_MODES):
-        group = summary[summary["order_mode"] == order_mode]
-        pivot = group.pivot(index="class_id", columns="epoch", values="class_accuracy_mean").sort_index()
-        image = axis.imshow(pivot.values, aspect="auto", origin="lower", vmin=0.0, vmax=1.0, cmap="viridis")
-        axis.set_title(PRETTY_NAMES.get(order_mode, order_mode), fontsize=10)
-        axis.set_xlabel("Epoch")
-        axis.set_ylabel("Class")
-        axis.set_xticks(np.arange(pivot.shape[1]))
-        axis.set_xticklabels(pivot.columns.astype(int))
-        axis.set_yticks(np.arange(pivot.shape[0]))
-        axis.set_yticklabels(pivot.index.astype(int))
+    for row, order_mode in enumerate(FAILURE_ORDER_MODES):
+        for column, seed in enumerate(seeds):
+            axis = axes[row, column]
+            group = class_accuracy[
+                (class_accuracy["order_mode"] == order_mode) & (class_accuracy["seed"] == seed)
+            ]
+            pivot = group.pivot(index="class_id", columns="epoch", values="class_accuracy").sort_index()
+            image = axis.imshow(pivot.values, aspect="auto", origin="lower", vmin=0.0, vmax=1.0, cmap="viridis")
+            axis.set_title(f"{PRETTY_NAMES.get(order_mode, order_mode)}, seed {seed}", fontsize=9)
+            if row == len(FAILURE_ORDER_MODES) - 1:
+                axis.set_xlabel("Epoch")
+            if column == 0:
+                axis.set_ylabel("Class")
+            axis.set_xticks(np.arange(pivot.shape[1]))
+            axis.set_xticklabels(pivot.columns.astype(int), fontsize=7)
+            axis.set_yticks(np.arange(pivot.shape[0]))
+            axis.set_yticklabels(pivot.index.astype(int), fontsize=7)
 
-    fig.subplots_adjust(left=0.09, right=0.88, bottom=0.15, top=0.90, wspace=0.28)
+    fig.subplots_adjust(left=0.07, right=0.88, bottom=0.10, top=0.93, wspace=0.18, hspace=0.28)
     if image is not None:
-        colorbar_axis = fig.add_axes([0.90, 0.18, 0.02, 0.65])
+        colorbar_axis = fig.add_axes([0.90, 0.15, 0.02, 0.70])
         colorbar = fig.colorbar(image, cax=colorbar_axis)
         colorbar.set_label("Class accuracy")
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
-    return summary
+    return class_accuracy.sort_values(["order_mode", "seed", "epoch", "class_id"]).reset_index(drop=True)
 
 
 def save_stable_cosine_panels(main_results_dir: str | Path, output_path: str | Path) -> pd.DataFrame:
